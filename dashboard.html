@@ -36,7 +36,7 @@
                     <option value="">Select Network Type</option>
                     <option value="LAN">LAN</option>
                     <option value="Wi-Fi">Wi-Fi</option>
-                    <option value="Mobile">Mobile</option>
+                    <option value="COFE CF-4G007e">COFE CF-4G007e</option>
                 </select>
                 <button onclick="addWebsite()">Add New</button>
             </div>
@@ -144,7 +144,7 @@ function renderTable() {
             ? `<select class="edit-input" onchange="websites[${index}].networkType=this.value">
                 <option value='LAN' ${site.networkType==='LAN'?'selected':''}>LAN</option>
                 <option value='Wi-Fi' ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
-                <option value='Mobile' ${site.networkType==='Mobile'?'selected':''}>Mobile</option>
+                <option value='COFE CF-4G007e' ${site.networkType==='COFE CF-4G007e'?'selected':''}>COFE CF-4G007e</option>
                </select>` 
             : site.networkType;
 
@@ -196,4 +196,5 @@ renderTable();
 </script>
 
 </body>
+
 </html>
