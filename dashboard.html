@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TrataSoft Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="dashboard">
+    <div class="sidebar">
+        <h2>TrataSoft</h2>
+        <ul>
+            <li id="monBtn" class="active" onclick="toggleView('monitor')">View Monitoring</li>
+            <li id="editBtn" onclick="toggleView('edit')">Settings / Edit</li>
+        </ul>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+            <h2 id="viewTitle">Live Monitoring</h2>
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="cards">
+            <div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
+            <div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
+            <div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
+        </div>
+
+        <div class="controls">
+            <div id="adminTools">
+                <input type="text" id="newName" placeholder="Company Name">
+                <input type="text" id="newUrl" placeholder="Website URL">
+                <select id="newNetwork">
+                    <option value="">Select Network Type</option>
+                    <option value="LAN">LAN</option>
+                    <option value="Wi-Fi">Wi-Fi</option>
+                    <option value="Mobile">Mobile</option>
+                </select>
+                <button onclick="addWebsite()">Add New</button>
+            </div>
+
+            <select id="filter" onchange="renderTable()">
+                <option value="all">Filter: All</option>
+                <option value="live">Live</option>
+                <option value="down">Down</option>
+            </select>
+            <input type="text" id="search" placeholder="Search site..." onkeyup="renderTable()">
+        </div>
+
+        <div class="tableBox">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Website</th>
+                        <th>Network</th>
+                        <th>Status</th>
+                        <th id="actionHeader" style="display:none;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="websiteTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+if(localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "index.html";
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "index.html";
+}
+
+let websites = [];
+let isEditMode = false;
+
+// Generate 001-700 sites
+for(let i = 1; i <= 700; i++){
+    let num = i.toString().padStart(3,'0');
+    websites.push({
+        name: "TrataSoft " + num,
+        url: "https://trtdlaita" + num + ".tratasoft.com/login",
+        status: "checking",
+        networkType: "LAN"
+    });
+}
+
+function toggleView(mode) {
+    isEditMode = (mode === 'edit');
+    document.getElementById('adminTools').style.display = isEditMode ? "block" : "none";
+    document.getElementById('actionHeader').style.display = isEditMode ? "table-cell" : "none";
+    document.getElementById('viewTitle').innerText = isEditMode ? "Management Mode" : "Live Monitoring";
+    document.getElementById('editBtn').classList.toggle('active', isEditMode);
+    document.getElementById('monBtn').classList.toggle('active', !isEditMode);
+    renderTable();
+}
+
+function addWebsite() {
+    const name = document.getElementById("newName").value;
+    const url = document.getElementById("newUrl").value;
+    const network = document.getElementById("newNetwork").value;
+    if(!name || !url || !network) return alert("Fill all fields");
+    websites.push({ name, url, status: "checking", networkType: network });
+    document.getElementById("newName").value = "";
+    document.getElementById("newUrl").value = "";
+    document.getElementById("newNetwork").value = "";
+    renderTable();
+}
+
+function deleteWebsite(index) {
+    if(confirm("Delete this entry?")) {
+        websites.splice(index, 1);
+        renderTable();
+    }
+}
+
+function renderTable() {
+    const filterValue = document.getElementById("filter").value;
+    const searchValue = document.getElementById("search").value.toLowerCase();
+    const tableBody = document.getElementById("websiteTable");
+    tableBody.innerHTML = "";
+
+    websites.forEach((site, index) => {
+        if(filterValue !== "all" && site.status !== filterValue) return;
+        if(!site.name.toLowerCase().includes(searchValue) && !site.url.toLowerCase().includes(searchValue)) return;
+
+        const row = document.createElement("tr");
+
+        const nameCell = isEditMode 
+            ? `<input class="edit-input" value="${site.name}" onchange="websites[${index}].name=this.value">` 
+            : site.name;
+
+        const urlCell = isEditMode 
+            ? `<input class="edit-input" value="${site.url}" onchange="websites[${index}].url=this.value">` 
+            : `<a href="${site.url}" target="_blank">${site.url}</a>`;
+
+        const networkCell = isEditMode 
+            ? `<select class="edit-input" onchange="websites[${index}].networkType=this.value">
+                <option value='LAN' ${site.networkType==='LAN'?'selected':''}>LAN</option>
+                <option value='Wi-Fi' ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
+                <option value='Mobile' ${site.networkType==='Mobile'?'selected':''}>Mobile</option>
+               </select>` 
+            : site.networkType;
+
+        const actionCell = isEditMode ? `<td><button class="del-btn" onclick="deleteWebsite(${index})">Delete</button></td>` : "";
+
+        row.innerHTML = `
+            <td>${nameCell}</td>
+            <td>${urlCell}</td>
+            <td>${networkCell}</td>
+            <td id="status-${index}" class="${site.status}">${site.status.toUpperCase()}</td>
+            ${actionCell}
+        `;
+
+        tableBody.appendChild(row);
+        checkStatus(site.url, index);
+    });
+
+    updateCounters();
+}
+
+function updateCounters() {
+    document.getElementById("totalCount").innerText = websites.length;
+    document.getElementById("liveCount").innerText = websites.filter(s => s.status === "live").length;
+    document.getElementById("downCount").innerText = websites.filter(s => s.status === "down").length;
+}
+
+function checkStatus(url, index) {
+    fetch(url, { mode: 'no-cors' })
+    .then(() => {
+        websites[index].status = "live";
+        const cell = document.getElementById("status-" + index);
+        if(cell) { cell.innerText = "LIVE"; cell.className = "live"; }
+    })
+    .catch(() => {
+        websites[index].status = "down";
+        const cell = document.getElementById("status-" + index);
+        if(cell) { cell.innerText = "DOWN"; cell.className = "down"; }
+    });
+}
+
+// Auto-refresh status every 30 seconds
+setInterval(() => {
+    websites.forEach((site, index) => checkStatus(site.url, index));
+    updateCounters();
+}, 30000);
+
+// Render table immediately
+renderTable();
+</script>
+
+</body>
+</html>
