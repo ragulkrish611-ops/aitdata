@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <title>TrataSoft Dashboard</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  /* Basic styling for demo */
+  body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f6f9; }
+  #dashboard { display: flex; height: 100vh; }
+  .sidebar { width: 220px; background: #1d3557; color: #fff; padding: 20px; }
+  .sidebar h2 { margin-bottom: 20px; }
+  .sidebar ul { list-style: none; padding: 0; }
+  .sidebar ul li { margin: 10px 0; cursor: pointer; }
+  .sidebar ul li.active { font-weight: bold; }
+  .main { flex: 1; padding: 20px; overflow-y: auto; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .cards { display: flex; gap: 15px; margin-bottom: 20px; }
+  .card { background: #fff; padding: 15px; flex: 1; text-align: center; border-radius: 8px; box-shadow: 0 0 5px #ccc; }
+  .controls { margin-bottom: 20px; }
+  input, select, button { padding: 5px; margin-right: 5px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+  th { background: #eee; }
+  .logout { padding: 5px 10px; background: #e63946; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
+</style>
 </head>
 <body>
 
@@ -19,7 +39,7 @@
     <div class="main">
         <div class="topbar">
             <h2 id="viewTitle">Live Monitoring</h2>
-            <button class="logout" onclick="logout()">Logout</button>
+            <button class="logout" id="logoutBtn">Logout</button>
         </div>
 
         <div class="cards">
@@ -38,7 +58,7 @@
                     <option value="Wi-Fi">Wi-Fi</option>
                     <option value="COFE CF-4G007e">COFE CF-4G007e</option>
                 </select>
-                <button onclick="addWebsite()">Add New</button>
+                <button id="addBtn">Add New</button>
             </div>
         </div>
 
@@ -60,7 +80,6 @@
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
   getFirestore, 
@@ -92,12 +111,13 @@ if(localStorage.getItem("loggedIn") !== "true") {
     window.location.href = "index.html";
 }
 
-window.logout = function() {
+/* Logout */
+document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("loggedIn");
     window.location.href = "index.html";
-};
+});
 
-/* 📥 Load Data */
+/* Load Websites */
 async function loadWebsites() {
     websites = [];
     const snapshot = await getDocs(collection(db, "websites"));
@@ -107,8 +127,8 @@ async function loadWebsites() {
     renderTable();
 }
 
-/* ➕ Add Website */
-window.addWebsite = async function() {
+/* Add Website */
+document.getElementById("addBtn").addEventListener("click", async () => {
     const name = document.getElementById("newName").value;
     const url = document.getElementById("newUrl").value;
     const network = document.getElementById("newNetwork").value;
@@ -127,9 +147,9 @@ window.addWebsite = async function() {
     document.getElementById("newNetwork").value = "";
 
     loadWebsites();
-};
+});
 
-/* ❌ Delete Website */
+/* Delete Website */
 window.deleteWebsite = async function(id) {
     if(confirm("Delete this entry?")) {
         await deleteDoc(doc(db, "websites", id));
@@ -137,7 +157,7 @@ window.deleteWebsite = async function(id) {
     }
 };
 
-/* 🔄 Toggle Mode */
+/* Toggle Mode */
 window.toggleView = function(mode) {
     isEditMode = (mode === 'edit');
     document.getElementById('adminTools').style.display = isEditMode ? "block" : "none";
@@ -146,15 +166,16 @@ window.toggleView = function(mode) {
     renderTable();
 };
 
-/* 📊 Render Table */
+/* Render Table */
 function renderTable() {
     const tableBody = document.getElementById("websiteTable");
     tableBody.innerHTML = "";
 
+    let liveCount = 0;
+    let downCount = 0;
+
     websites.forEach(site => {
-
         const row = document.createElement("tr");
-
         row.innerHTML = `
             <td>${site.name}</td>
             <td><a href="${site.url}" target="_blank">${site.url}</a></td>
@@ -162,16 +183,14 @@ function renderTable() {
             <td id="status-${site.id}">${site.status || "checking"}</td>
             ${isEditMode ? `<td><button onclick="deleteWebsite('${site.id}')">Delete</button></td>` : ""}
         `;
-
         tableBody.appendChild(row);
-
         checkStatus(site.url, site.id);
     });
 
     updateCounters();
 }
 
-/* 🌐 Check Website Status */
+/* Check Website Status */
 function checkStatus(url, id) {
     fetch(url, { mode: 'no-cors' })
     .then(() => {
@@ -182,17 +201,28 @@ function checkStatus(url, id) {
     });
 }
 
-/* 🔢 Counters */
+/* Update Counters */
 function updateCounters() {
-    document.getElementById("totalCount").innerText = websites.length;
+    const total = websites.length;
+    let live = 0;
+    let down = 0;
+    websites.forEach(site => {
+        const statusEl = document.getElementById("status-"+site.id);
+        if(statusEl && statusEl.innerText === "LIVE") live++;
+        if(statusEl && statusEl.innerText === "DOWN") down++;
+    });
+
+    document.getElementById("totalCount").innerText = total;
+    document.getElementById("liveCount").innerText = live;
+    document.getElementById("downCount").innerText = down;
 }
 
-/* ⏳ Auto Refresh */
+/* Auto Refresh */
 setInterval(loadWebsites, 30000);
 
-/* 🚀 Start */
+/* Start */
 loadWebsites();
-
 </script>
+
 </body>
 </html>
