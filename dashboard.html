@@ -1,189 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>TrataSoft Dashboard</title>
-<style>
-body{font-family:sans-serif;margin:0;padding:0;background:#f4f6f9;}
-#dashboard{display:flex;}
-.sidebar{width:200px;background:#1d3557;color:white;padding:20px;height:100vh;}
-.sidebar ul{list-style:none;padding:0;}
-.sidebar li{padding:10px;cursor:pointer;}
-.sidebar li.active{background:#457b9d;}
-.main{flex:1;padding:20px;}
-.topbar{display:flex;justify-content:space-between;align-items:center;}
-.cards{display:flex;gap:10px;margin:20px 0;}
-.card{background:white;padding:20px;flex:1;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-.tableBox table{width:100%;border-collapse:collapse;}
-.tableBox th,.tableBox td{border:1px solid #ccc;padding:10px;text-align:left;}
-#adminTools input, #adminTools select, #adminTools button{margin-right:10px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Under Maintenance</title>
+    <style>
+        /* Reset default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            background: #fff;
+            padding: 40px 60px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #ff6f61;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: #ff6f61;
+        }
+
+        /* Optional button to go home */
+        a {
+            display: inline-block;
+            padding: 10px 25px;
+            background: #ff6f61;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        a:hover {
+            background: #e55b4f;
+        }
+    </style>
 </head>
 <body>
-
-<div id="dashboard">
-<div class="sidebar">
-<h2>TrataSoft</h2>
-<ul>
-<li id="monBtn" class="active" onclick="toggleView('monitor')">View Monitoring</li>
-<li id="editBtn" onclick="toggleView('edit')">Settings / Edit</li>
-</ul>
-</div>
-
-<div class="main">
-<div class="topbar">
-<h2 id="viewTitle">Live Monitoring</h2>
-<button id="logoutBtn">Logout</button>
-</div>
-
-<div class="cards">
-<div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
-<div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
-<div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
-</div>
-
-<div class="controls">
-<div id="adminTools" style="display:none;">
-<input type="text" id="newName" placeholder="Company Name">
-<input type="text" id="newUrl" placeholder="Website URL">
-<select id="newNetwork">
-<option value="">Select Network Type</option>
-<option value="LAN">LAN</option>
-<option value="Wi-Fi">Wi-Fi</option>
-<option value="COFE CF-4G007e">COFE CF-4G007e</option>
-</select>
-<button id="addBtn">Add New</button>
-</div>
-</div>
-
-<div class="tableBox">
-<table>
-<thead>
-<tr>
-<th>Company</th>
-<th>Website</th>
-<th>Network</th>
-<th>Status</th>
-<th id="actionHeader" style="display:none;">Action</th>
-</tr>
-</thead>
-<tbody id="websiteTable"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-/* 🔥 Replace with your Firebase config */
-const firebaseConfig = {
-  apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
-  authDomain: "aitdata.firebaseapp.com",
-  projectId: "aitdata",
-  storageBucket: "aitdata.firebasestorage.app",
-  messagingSenderId: "1086041126338",
-  appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-let isEditMode = false;
-
-/* Login simulation */
-if(!localStorage.getItem("loggedIn")) localStorage.setItem("loggedIn","true");
-
-/* Logout */
-document.getElementById("logoutBtn").addEventListener("click",()=>{
-  localStorage.removeItem("loggedIn");
-  location.reload();
-});
-
-/* Load websites from Firestore */
-async function loadWebsites(){
-  const snapshot = await getDocs(collection(db,"websites"));
-  const websites = [];
-  snapshot.forEach(docSnap=>{
-    websites.push({id:docSnap.id,...docSnap.data()});
-  });
-  renderTable(websites);
-}
-
-/* Add website */
-document.getElementById("addBtn").addEventListener("click", async()=>{
-  const name=document.getElementById("newName").value;
-  const url=document.getElementById("newUrl").value;
-  const network=document.getElementById("newNetwork").value;
-  if(!name||!url||!network)return alert("Fill all fields");
-  await addDoc(collection(db,"websites"),{name,url,networkType:network});
-  document.getElementById("newName").value="";
-  document.getElementById("newUrl").value="";
-  document.getElementById("newNetwork").value="";
-  loadWebsites();
-});
-
-/* Delete website */
-window.deleteWebsite=async function(id){
-  if(confirm("Delete this entry?")){
-    await deleteDoc(doc(db,"websites",id));
-    loadWebsites();
-  }
-};
-
-/* Toggle view */
-window.toggleView=function(mode){
-  isEditMode=(mode==='edit');
-  document.getElementById('adminTools').style.display=isEditMode?"block":"none";
-  document.getElementById('actionHeader').style.display=isEditMode?"table-cell":"none";
-  document.getElementById('viewTitle').innerText=isEditMode?"Management Mode":"Live Monitoring";
-  loadWebsites();
-};
-
-/* Render table */
-function renderTable(websites){
-  const tbody=document.getElementById("websiteTable");
-  tbody.innerHTML="";
-  websites.forEach(site=>{
-    const row=document.createElement("tr");
-    row.innerHTML=`<td>${site.name}</td>
-<td><a href="${site.url}" target="_blank">${site.url}</a></td>
-<td>${site.networkType}</td>
-<td id="status-${site.id}">Checking...</td>
-${isEditMode?`<td><button onclick="deleteWebsite('${site.id}')">Delete</button></td>`:""}`;
-    tbody.appendChild(row);
-    checkStatus(site.url,site.id);
-  });
-  updateCounters(websites);
-}
-
-/* Check status (best-effort, browser CORS) */
-function checkStatus(url,id){
-  fetch(url,{mode:'no-cors'})
-  .then(()=>document.getElementById("status-"+id).innerText="LIVE")
-  .catch(()=>document.getElementById("status-"+id).innerText="DOWN")
-}
-
-/* Update counters */
-function updateCounters(websites){
-  const total=websites.length;
-  let live=0,down=0;
-  websites.forEach(site=>{
-    const st=document.getElementById("status-"+site.id)?.innerText;
-    if(st==="LIVE")live++; if(st==="DOWN")down++;
-  });
-  document.getElementById("totalCount").innerText=total;
-  document.getElementById("liveCount").innerText=live;
-  document.getElementById("downCount").innerText=down;
-}
-
-/* Auto refresh every 30s */
-setInterval(loadWebsites,30000);
-
-/* Initial load */
-loadWebsites();
-</script>
-
+    <div class="container">
+        <div class="icon">🛠️</div>
+        <h1>We'll Be Back Soon!</h1>
+        <p>Our website is currently undergoing scheduled maintenance. Thank you for your patience.</p>
+        <a href="/">Go to Home</a>
+    </div>
 </body>
 </html>
