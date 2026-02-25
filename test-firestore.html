@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Firestore Test</title>
+</head>
+<body>
+
+<h2>Firestore Test</h2>
+
+<input type="text" id="company" placeholder="Company Name">
+<input type="text" id="url" placeholder="Website URL">
+<input type="text" id="network" placeholder="Network Type">
+<button id="addBtn">Add Website</button>
+
+<h3>Websites in Database:</h3>
+<ul id="list"></ul>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// 🔹 Use your Firebase config here
+const firebaseConfig = {
+  apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
+  authDomain: "aitdata.firebaseapp.com",
+  projectId: "aitdata",
+  storageBucket: "aitdata.firebasestorage.app",
+  messagingSenderId: "1086041126338",
+  appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b",
+  measurementId: "G-J2DDR8D9QN"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const list = document.getElementById("list");
+const addBtn = document.getElementById("addBtn");
+
+async function loadWebsites() {
+  list.innerHTML = "";
+  const snapshot = await getDocs(collection(db, "websites"));
+  snapshot.forEach(docSnap => {
+    const li = document.createElement("li");
+    li.textContent = `${docSnap.data().name} - ${docSnap.data().url} - ${docSnap.data().networkType}`;
+    list.appendChild(li);
+  });
+}
+
+addBtn.addEventListener("click", async () => {
+  const name = document.getElementById("company").value;
+  const url = document.getElementById("url").value;
+  const network = document.getElementById("network").value;
+  if (!name || !url || !network) return alert("Fill all fields");
+
+  await addDoc(collection(db, "websites"), {
+    name,
+    url,
+    networkType: network
+  });
+
+  document.getElementById("company").value = "";
+  document.getElementById("url").value = "";
+  document.getElementById("network").value = "";
+
+  loadWebsites();
+});
+
+// Load websites on page load
+loadWebsites();
+</script>
+</body>
+</html>
