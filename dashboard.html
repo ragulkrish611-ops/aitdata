@@ -4,26 +4,6 @@
 <meta charset="UTF-8">
 <title>TrataSoft Dashboard</title>
 <link rel="stylesheet" href="style.css">
-<style>
-  /* Basic styling for demo */
-  body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f6f9; }
-  #dashboard { display: flex; height: 100vh; }
-  .sidebar { width: 220px; background: #1d3557; color: #fff; padding: 20px; }
-  .sidebar h2 { margin-bottom: 20px; }
-  .sidebar ul { list-style: none; padding: 0; }
-  .sidebar ul li { margin: 10px 0; cursor: pointer; }
-  .sidebar ul li.active { font-weight: bold; }
-  .main { flex: 1; padding: 20px; overflow-y: auto; }
-  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .cards { display: flex; gap: 15px; margin-bottom: 20px; }
-  .card { background: #fff; padding: 15px; flex: 1; text-align: center; border-radius: 8px; box-shadow: 0 0 5px #ccc; }
-  .controls { margin-bottom: 20px; }
-  input, select, button { padding: 5px; margin-right: 5px; }
-  table { width: 100%; border-collapse: collapse; background: #fff; }
-  th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
-  th { background: #eee; }
-  .logout { padding: 5px 10px; background: #e63946; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
-</style>
 </head>
 <body>
 
@@ -89,6 +69,7 @@ import {
   deleteDoc, 
   doc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 
 /* 🔥 Firebase Config */
 const firebaseConfig = {
@@ -102,11 +83,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const functions = getFunctions(app);
+const checkStatusFunc = httpsCallable(functions, "checkWebsiteStatus");
 
 let websites = [];
 let isEditMode = false;
 
-/* 🔐 Login Check */
+/* Login Check */
 if(localStorage.getItem("loggedIn") !== "true") {
     window.location.href = "index.html";
 }
@@ -132,24 +115,18 @@ document.getElementById("addBtn").addEventListener("click", async () => {
     const name = document.getElementById("newName").value;
     const url = document.getElementById("newUrl").value;
     const network = document.getElementById("newNetwork").value;
-
     if(!name || !url || !network) return alert("Fill all fields");
 
     await addDoc(collection(db, "websites"), {
-        name,
-        url,
-        networkType: network,
-        status: "checking"
+        name, url, networkType: network
     });
-
     document.getElementById("newName").value = "";
     document.getElementById("newUrl").value = "";
     document.getElementById("newNetwork").value = "";
-
     loadWebsites();
 });
 
-/* Delete Website */
+/* Delete */
 window.deleteWebsite = async function(id) {
     if(confirm("Delete this entry?")) {
         await deleteDoc(doc(db, "websites", id));
@@ -157,7 +134,7 @@ window.deleteWebsite = async function(id) {
     }
 };
 
-/* Toggle Mode */
+/* Toggle View */
 window.toggleView = function(mode) {
     isEditMode = (mode === 'edit');
     document.getElementById('adminTools').style.display = isEditMode ? "block" : "none";
@@ -170,59 +147,46 @@ window.toggleView = function(mode) {
 function renderTable() {
     const tableBody = document.getElementById("websiteTable");
     tableBody.innerHTML = "";
-
-    let liveCount = 0;
-    let downCount = 0;
-
     websites.forEach(site => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${site.name}</td>
             <td><a href="${site.url}" target="_blank">${site.url}</a></td>
             <td>${site.networkType}</td>
-            <td id="status-${site.id}">${site.status || "checking"}</td>
+            <td id="status-${site.id}">Checking...</td>
             ${isEditMode ? `<td><button onclick="deleteWebsite('${site.id}')">Delete</button></td>` : ""}
         `;
         tableBody.appendChild(row);
-        checkStatus(site.url, site.id);
+        checkSiteStatus(site.url, site.id);
     });
-
     updateCounters();
 }
 
-/* Check Website Status */
-function checkStatus(url, id) {
-    fetch(url, { mode: 'no-cors' })
-    .then(() => {
-        document.getElementById("status-"+id).innerText = "LIVE";
-    })
-    .catch(() => {
-        document.getElementById("status-"+id).innerText = "DOWN";
-    });
+/* Check Status via Cloud Function */
+async function checkSiteStatus(url, id) {
+    try {
+        const res = await checkStatusFunc({ url });
+        document.getElementById("status-" + id).innerText = res.data.status;
+    } catch (e) {
+        document.getElementById("status-" + id).innerText = "DOWN";
+    }
 }
 
 /* Update Counters */
 function updateCounters() {
     const total = websites.length;
-    let live = 0;
-    let down = 0;
+    let live = 0, down = 0;
     websites.forEach(site => {
-        const statusEl = document.getElementById("status-"+site.id);
-        if(statusEl && statusEl.innerText === "LIVE") live++;
-        if(statusEl && statusEl.innerText === "DOWN") down++;
+        const st = document.getElementById("status-" + site.id)?.innerText;
+        if(st === "LIVE") live++;
+        if(st === "DOWN") down++;
     });
-
     document.getElementById("totalCount").innerText = total;
     document.getElementById("liveCount").innerText = live;
     document.getElementById("downCount").innerText = down;
 }
 
-/* Auto Refresh */
-setInterval(loadWebsites, 30000);
-
-/* Start */
 loadWebsites();
 </script>
-
 </body>
 </html>
