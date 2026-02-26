@@ -3,6 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <title>TrataSoft Dashboard</title>
+<style>
+  /* ===== Global ===== */
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
+  body { background:#f4f6f9; color:#333; }
+
+  a { color:#1d3557; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+
+  /* ===== Dashboard Layout ===== */
+  #dashboard { display:flex; height:100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width:220px; background:#1d3557; color:white; padding:20px 10px; display:flex; flex-direction:column;
+  }
+  .sidebar h2 { text-align:center; margin-bottom:30px; font-size:1.5em; }
+  .sidebar ul { list-style:none; }
+  .sidebar li {
+    padding:10px 15px; margin-bottom:10px; cursor:pointer; border-radius:5px;
+    transition: background 0.2s;
+  }
+  .sidebar li:hover, .sidebar li.active { background:#457b9d; }
+
+  /* Main Content */
+  .main { flex:1; display:flex; flex-direction:column; padding:20px; overflow:auto; }
+
+  /* Topbar */
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .topbar h2 { font-size:1.5em; }
+  .topbar button { padding:6px 12px; border:none; background:#e63946; color:white; border-radius:5px; cursor:pointer; }
+  .topbar button:hover { background:#d62828; }
+
+  /* Cards */
+  .cards { display:flex; gap:15px; margin-bottom:20px; }
+  .card { flex:1; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
+  .card h3 { margin-bottom:10px; color:#1d3557; }
+  .liveCard { border-top:4px solid #2a9d8f; }
+  .downCard { border-top:4px solid #e63946; }
+
+  /* Controls */
+  .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+  #adminTools { display:none; gap:10px; flex-wrap:wrap; }
+  #adminTools input, #adminTools select, .controls select, .controls input[type="text"], #adminTools button {
+    padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:0.9em;
+  }
+  #adminTools button { background:#1d3557; color:white; border:none; cursor:pointer; }
+  #adminTools button:hover { background:#457b9d; }
+
+  /* Table */
+  .tableBox { overflow:auto; background:white; border-radius:8px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px; border-bottom:1px solid #ddd; }
+  th { background:#f1f1f1; }
+  td input, td select { width:100%; padding:4px; }
+
+  td button { padding:4px 8px; border:none; background:#e63946; color:white; border-radius:4px; cursor:pointer; }
+  td button:hover { background:#d62828; }
+
+  /* Status Colors */
+  td[id^="status-"].live { color:#2a9d8f; font-weight:bold; text-transform:uppercase; }
+  td[id^="status-"].down { color:#e63946; font-weight:bold; text-transform:uppercase; }
+
+  /* Responsive */
+  @media(max-width:800px){
+    #dashboard { flex-direction:column; }
+    .sidebar { width:100%; display:flex; flex-direction:row; justify-content:space-around; }
+    .main { padding:10px; }
+    .cards { flex-direction:column; }
+  }
+</style>
 </head>
 <body>
 
@@ -196,7 +266,11 @@ function initDashboard(){
       } else networkCell.innerText=site.networkType;
 
       const statusCell=document.createElement("td");
-      statusCell.id="status-"+i; statusCell.innerText=site.status.toUpperCase();
+      statusCell.id="status-"+i;
+      statusCell.innerText=site.status.toUpperCase();
+      statusCell.classList.remove("live","down");
+      if(site.status==="live") statusCell.classList.add("live");
+      if(site.status==="down") statusCell.classList.add("down");
 
       const actionCell=document.createElement("td"); actionCell.style.display=isEditMode?"table-cell":"none";
       if(isEditMode){ const btn=document.createElement("button"); btn.innerText="Delete"; btn.onclick=()=>deleteWebsite(i); actionCell.appendChild(btn); }
@@ -210,19 +284,34 @@ function initDashboard(){
   }
 
   function updateCounters(){
-    document.getElementById("totalCount").innerText=websites.length;
-    document.getElementById("liveCount").innerText=websites.filter(s=>s.status==="live").length;
-    document.getElementById("downCount").innerText=websites.filter(s=>s.status==="down").length;
+    const liveCount = websites.filter(s=>s.status==="live").length;
+    const downCount = websites.filter(s=>s.status==="down").length;
+    document.getElementById("totalCount").innerText = websites.length;
+    document.getElementById("liveCount").innerText = liveCount;
+    document.getElementById("downCount").innerText = downCount;
+
+    // Optional: dynamically color card numbers
+    document.querySelector(".liveCard p").style.color = liveCount>0?"#2a9d8f":"#555";
+    document.querySelector(".downCard p").style.color = downCount>0?"#e63946":"#555";
   }
 
   function checkStatus(url,i){
-    fetch(url,{mode:'no-cors'}).then(()=>{websites[i].status="live"; const c=document.getElementById("status-"+i); if(c){c.innerText="LIVE";}})
-    .catch(()=>{websites[i].status="down"; const c=document.getElementById("status-"+i); if(c){c.innerText="DOWN";}});
+    fetch(url, { mode:'no-cors' })
+      .then(()=>{
+        websites[i].status="live";
+        const c=document.getElementById("status-"+i);
+        if(c){ c.innerText="LIVE"; c.classList.add("live"); c.classList.remove("down"); }
+      })
+      .catch(()=>{
+        websites[i].status="down";
+        const c=document.getElementById("status-"+i);
+        if(c){ c.innerText="DOWN"; c.classList.add("down"); c.classList.remove("live"); }
+      });
   }
 
   setInterval(()=>{websites.forEach((site,i)=>checkStatus(site.url,i)); updateCounters();},30000);
-}
 
+}
 </script>
 
 </body>
