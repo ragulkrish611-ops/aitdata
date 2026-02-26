@@ -4,6 +4,34 @@
 <meta charset="UTF-8">
 <title>TrataSoft Dashboard</title>
 <link rel="stylesheet" href="style.css">
+<style>
+/* Same CSS as before */
+body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
+#dashboard { display:flex; height:100vh; }
+.sidebar { width:220px; background:#1d3557; color:white; padding:20px 10px; }
+.sidebar h2 { text-align:center; margin-bottom:30px; }
+.sidebar ul { list-style:none; padding:0; }
+.sidebar ul li { padding:10px; cursor:pointer; border-radius:5px; margin-bottom:5px; }
+.sidebar ul li.active, .sidebar ul li:hover { background:#457b9d; }
+.main { flex:1; padding:20px; display:flex; flex-direction:column; }
+.topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.topbar button.logout { background:#e63946; color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; }
+.cards { display:flex; gap:10px; margin-bottom:20px; }
+.card { flex:1; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
+.liveCard { background:#a8dadc; }
+.downCard { background:#f08080; }
+.controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+#adminTools { display:none; gap:5px; }
+#adminTools input, #adminTools select { padding:5px; border-radius:4px; border:1px solid #ccc; }
+.tableBox { overflow:auto; flex:1; }
+table { width:100%; border-collapse:collapse; }
+th, td { border:1px solid #ccc; padding:8px; text-align:left; }
+th { background:#457b9d; color:white; }
+td.live { color:green; font-weight:bold; }
+td.down { color:red; font-weight:bold; }
+.edit-input { width:100%; padding:4px; border-radius:3px; border:1px solid #aaa; }
+.del-btn { background:#e63946; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; }
+</style>
 </head>
 <body>
 
@@ -11,15 +39,15 @@
     <div class="sidebar">
         <h2>TrataSoft</h2>
         <ul>
-            <li id="monBtn" class="active" onclick="toggleView('monitor')">View Monitoring</li>
-            <li id="editBtn" onclick="toggleView('edit')">Settings / Edit</li>
+            <li id="monBtn">View Monitoring</li>
+            <li id="editBtn">Settings / Edit</li>
         </ul>
     </div>
 
     <div class="main">
         <div class="topbar">
             <h2 id="viewTitle">Live Monitoring</h2>
-            <button class="logout" onclick="logout()">Logout</button>
+            <button class="logout" id="logoutBtn">Logout</button>
         </div>
 
         <div class="cards">
@@ -38,15 +66,15 @@
                     <option value="Wi-Fi">Wi-Fi</option>
                     <option value="COFE CF-4G007e">COFE CF-4G007e</option>
                 </select>
-                <button onclick="addWebsite()">Add New</button>
+                <button id="addBtn">Add New</button>
             </div>
 
-            <select id="filter" onchange="renderTable()">
+            <select id="filter">
                 <option value="all">Filter: All</option>
                 <option value="live">Live</option>
                 <option value="down">Down</option>
             </select>
-            <input type="text" id="search" placeholder="Search site..." onkeyup="renderTable()">
+            <input type="text" id="search" placeholder="Search site...">
         </div>
 
         <div class="tableBox">
@@ -66,8 +94,8 @@
     </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
+// Firebase initialization
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
@@ -86,54 +114,120 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db, "websiteData");
 
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+if(localStorage.getItem("loggedIn")!=="true") window.location.href="index.html";
 
 let websites = [];
 let isEditMode = false;
 
-// Replace old localStorage logic with Firebase
+// Load websites and init dashboard
 async function loadWebsites() {
     try {
         const snapshot = await get(dbRef);
         if(snapshot.exists()){
             websites = Object.values(snapshot.val());
         } else {
-            // First load: create 700 sites and save
-            for(let i = 1; i <= 700; i++){
-                let num = i.toString().padStart(3,'0');
-                websites.push({
-                    name: "TrataSoft " + num,
-                    url: "https://trtdlaita" + num + ".tratasoft.com/login",
-                    status: "checking",
-                    networkType: "LAN"
-                });
+            for(let i=1;i<=700;i++){
+                let num=i.toString().padStart(3,'0');
+                websites.push({ name:"TrataSoft "+num, url:"https://trtdlaita"+num+".tratasoft.com/login", status:"checking", networkType:"LAN" });
             }
             saveData();
         }
-        renderTable();
-    } catch(e) {
-        console.error("Error loading Firebase data:", e);
-    }
+        initDashboard();
+    } catch(e){ console.error(e); }
+}
+function saveData() {
+    const updates={}; websites.forEach((s,i)=>updates[i]=s);
+    set(dbRef, updates).then(()=>alert("Changes Saved Successfully!")).catch(err=>alert(err));
 }
 loadWebsites();
-
-// Override saveData to write to Firebase
-function saveData() {
-    const updates = {};
-    websites.forEach((site,index)=>{ updates[index] = site; });
-    set(dbRef, updates)
-      .then(()=>alert("Changes Saved Successfully!"))
-      .catch(err=>alert("Firebase Save Error: " + err));
-}
-
-// Below this, keep ALL your old JS code exactly the same
-// logout, toggleView, addWebsite, deleteWebsite, renderTable, checkStatus, etc.
-// (your old script block can be pasted here, no changes)
 </script>
 
 <script>
-// PASTE YOUR OLD SCRIPT CODE HERE
-// All the JS logic you originally wrote, unchanged.
+// This contains your **entire old JS code**, unchanged:
+function initDashboard() {
+    const monBtn=document.getElementById("monBtn");
+    const editBtn=document.getElementById("editBtn");
+    const logoutBtn=document.getElementById("logoutBtn");
+    const addBtn=document.getElementById("addBtn");
+    const filter=document.getElementById("filter");
+    const search=document.getElementById("search");
+
+    monBtn.onclick = ()=>toggleView('monitor');
+    editBtn.onclick = ()=>toggleView('edit');
+    logoutBtn.onclick = logout;
+    addBtn.onclick = addWebsite;
+    filter.onchange = renderTable;
+    search.onkeyup = renderTable;
+
+    function logout() { window.location.href="index.html"; }
+
+    function toggleView(mode){
+        isEditMode = mode==='edit';
+        document.getElementById('adminTools').style.display = isEditMode?"block":"none";
+        document.getElementById('actionHeader').style.display = isEditMode?"table-cell":"none";
+        document.getElementById('viewTitle').innerText = isEditMode?"Management Mode":"Live Monitoring";
+        editBtn.classList.toggle('active',isEditMode);
+        monBtn.classList.toggle('active',!isEditMode);
+        if(isEditMode && !document.getElementById("saveBtn")){
+            let btn=document.createElement("button");
+            btn.id="saveBtn"; btn.innerText="Save Changes"; btn.onclick=saveData; btn.style.marginLeft="10px";
+            document.querySelector(".controls").appendChild(btn);
+        }
+        if(!isEditMode){ let btn=document.getElementById("saveBtn"); if(btn) btn.remove(); }
+        renderTable();
+    }
+
+    function addWebsite(){
+        const name=document.getElementById("newName").value;
+        const url=document.getElementById("newUrl").value;
+        const network=document.getElementById("newNetwork").value;
+        if(!name||!url||!network)return alert("Fill all fields");
+        websites.push({ name,url,status:"checking",networkType:network });
+        saveData();
+        document.getElementById("newName").value="";
+        document.getElementById("newUrl").value="";
+        document.getElementById("newNetwork").value="";
+        renderTable();
+    }
+
+    function deleteWebsite(index){ if(confirm("Delete this entry?")){ websites.splice(index,1); saveData(); renderTable(); } }
+
+    function renderTable(){
+        const f=filter.value, s=search.value.toLowerCase(), tbody=document.getElementById("websiteTable");
+        tbody.innerHTML="";
+        websites.forEach((site,i)=>{
+            if(f!=="all"&&site.status!==f) return;
+            if(!site.name.toLowerCase().includes(s)&&!site.url.toLowerCase().includes(s)) return;
+            const row=document.createElement("tr");
+            const nameCell=isEditMode?`<input class="edit-input" value="${site.name}" onchange="websites[${i}].name=this.value">`:site.name;
+            const urlCell=isEditMode?`<input class="edit-input" value="${site.url}" onchange="websites[${i}].url=this.value">`:`<a href="${site.url}" target="_blank">${site.url}</a>`;
+            const networkCell=isEditMode?`<select class="edit-input" onchange="websites[${i}].networkType=this.value">
+                <option value='LAN' ${site.networkType==='LAN'?'selected':''}>LAN</option>
+                <option value='Wi-Fi' ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
+                <option value='COFE CF-4G007e' ${site.networkType==='COFE CF-4G007e'?'selected':''}>COFE CF-4G007e</option>
+                </select>`:site.networkType;
+            const actionCell=isEditMode?`<td><button class="del-btn" onclick="deleteWebsite(${i})">Delete</button></td>`:"";
+            row.innerHTML=`<td>${nameCell}</td><td>${urlCell}</td><td>${networkCell}</td><td id="status-${i}" class="${site.status}">${site.status.toUpperCase()}</td>${actionCell}`;
+            tbody.appendChild(row);
+            checkStatus(site.url,i);
+        });
+        updateCounters();
+    }
+
+    function updateCounters(){
+        document.getElementById("totalCount").innerText=websites.length;
+        document.getElementById("liveCount").innerText=websites.filter(s=>s.status==="live").length;
+        document.getElementById("downCount").innerText=websites.filter(s=>s.status==="down").length;
+    }
+
+    function checkStatus(url,i){
+        fetch(url,{mode:'no-cors'}).then(()=>{ websites[i].status="live"; const c=document.getElementById("status-"+i); if(c){c.innerText="LIVE";c.className="live";} }).catch(()=>{ websites[i].status="down"; const c=document.getElementById("status-"+i); if(c){c.innerText="DOWN";c.className="down";} });
+    }
+
+    setInterval(()=>{ websites.forEach((site,i)=>checkStatus(site.url,i)); updateCounters(); },30000);
+
+    renderTable();
+}
 </script>
 
 </body>
