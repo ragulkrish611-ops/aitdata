@@ -2,72 +2,192 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Firestore Test</title>
+<title>TrataSoft Dashboard</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+body{background:#f4f6f9;color:#333;}
+
+#loadingScreen{
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:9999;
+}
+
+.loader{
+  border:6px solid #eee;
+  border-top:6px solid #1d3557;
+  border-radius:50%;
+  width:50px;
+  height:50px;
+  animation:spin 1s linear infinite;
+  margin-bottom:15px;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+
+#dashboard{display:none;height:100vh;}
+
+a{color:#1d3557;text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+.sidebar{width:220px;background:#1d3557;color:white;padding:20px 10px;display:flex;flex-direction:column;}
+.sidebar h2{text-align:center;margin-bottom:30px;font-size:1.5em;}
+.sidebar ul{list-style:none;}
+.sidebar li{padding:10px 15px;margin-bottom:10px;cursor:pointer;border-radius:5px;transition:background 0.2s;}
+.sidebar li:hover,.sidebar li.active{background:#457b9d;}
+
+.main{flex:1;display:flex;flex-direction:column;padding:20px;overflow:auto;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.topbar h2{font-size:1.5em;}
+.topbar button{padding:6px 12px;border:none;background:#e63946;color:white;border-radius:5px;cursor:pointer;}
+.topbar button:hover{background:#d62828;}
+
+.cards{display:flex;gap:15px;margin-bottom:20px;}
+.card{flex:1;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);text-align:center;}
+.card h3{margin-bottom:10px;color:#1d3557;}
+.liveCard{border-top:4px solid #2a9d8f;}
+.downCard{border-top:4px solid #e63946;}
+
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+#adminTools{display:none;gap:10px;flex-wrap:wrap;}
+#adminTools input,#adminTools select,.controls select,.controls input[type="text"],#adminTools button{
+padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:0.9em;}
+#adminTools button{background:#1d3557;color:white;border:none;cursor:pointer;}
+#adminTools button:hover{background:#457b9d;}
+
+.tableBox{overflow:auto;background:white;border-radius:8px;padding:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+table{width:100%;border-collapse:collapse;}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd;}
+th{background:#f1f1f1;}
+td input,td select{width:100%;padding:4px;}
+td button{padding:4px 8px;border:none;background:#e63946;color:white;border-radius:4px;cursor:pointer;}
+td button:hover{background:#d62828;}
+
+td[id^="status-"].live{color:#2a9d8f;font-weight:bold;text-transform:uppercase;}
+td[id^="status-"].down{color:#e63946;font-weight:bold;text-transform:uppercase;}
+
+@media(max-width:800px){
+#dashboard{flex-direction:column;}
+.sidebar{width:100%;display:flex;flex-direction:row;justify-content:space-around;}
+.main{padding:10px;}
+.cards{flex-direction:column;}
+}
+</style>
 </head>
 <body>
 
-<h2>Firestore Test</h2>
+<div id="loadingScreen">
+  <div class="loader"></div>
+  <h3>Loading Dashboard...</h3>
+</div>
 
-<input type="text" id="company" placeholder="Company Name">
-<input type="text" id="url" placeholder="Website URL">
-<input type="text" id="network" placeholder="Network Type">
-<button id="addBtn">Add Website</button>
+<div id="dashboard">
+  <!-- YOUR ORIGINAL DASHBOARD HTML EXACTLY SAME -->
+  <!-- (I DID NOT CHANGE ANYTHING INSIDE) -->
 
-<h3>Websites in Database:</h3>
-<ul id="list"></ul>
+  <div class="sidebar">
+    <h2>TrataSoft</h2>
+    <ul>
+      <li id="monBtn" class="active">View Monitoring</li>
+      <li id="editBtn">Settings / Edit</li>
+    </ul>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h2 id="viewTitle">Live Monitoring</h2>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="cards">
+      <div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
+      <div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
+      <div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
+    </div>
+
+    <div class="controls">
+      <div id="adminTools">
+        <input type="text" id="newName" placeholder="Company Name">
+        <input type="text" id="newUrl" placeholder="Website URL">
+        <select id="newNetwork">
+          <option value="">Select Network Type</option>
+          <option value="LAN">LAN</option>
+          <option value="Wi-Fi">Wi-Fi</option>
+          <option value="COFE CF-4G007e">COFE CF-4G007e</option>
+        </select>
+        <button id="addBtn">Add New</button>
+        <button id="saveBtn">Save Changes</button>
+      </div>
+
+      <select id="filter">
+        <option value="all">Filter: All</option>
+        <option value="live">Live</option>
+        <option value="down">Down</option>
+      </select>
+      <input type="text" id="search" placeholder="Search site...">
+    </div>
+
+    <div class="tableBox">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Website</th>
+            <th>Network</th>
+            <th>Status</th>
+            <th id="actionHeader" style="display:none;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="websiteTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// 🔹 Use your Firebase config here
 const firebaseConfig = {
-  apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
-  authDomain: "aitdata.firebaseapp.com",
-  projectId: "aitdata",
-  storageBucket: "aitdata.firebasestorage.app",
-  messagingSenderId: "1086041126338",
-  appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b",
-  measurementId: "G-J2DDR8D9QN"
+  apiKey:"AIzaSyC1I7uggV3I8Z7pmbpWQmJZO_mHlWQ7qRc",
+  authDomain:"aitdata-1f856.firebaseapp.com",
+  databaseURL:"https://aitdata-1f856-default-rtdb.firebaseio.com",
+  projectId:"aitdata-1f856",
+  storageBucket:"aitdata-1f856.firebasestorage.app",
+  messagingSenderId:"535350785851",
+  appId:"1:535350785851:web:67abe23a6da1dca7fe291e"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
+const dbRef = ref(db,"websiteData");
 
-const list = document.getElementById("list");
-const addBtn = document.getElementById("addBtn");
+let websites=[];
 
-async function loadWebsites() {
-  list.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "websites"));
-  snapshot.forEach(docSnap => {
-    const li = document.createElement("li");
-    li.textContent = `${docSnap.data().name} - ${docSnap.data().url} - ${docSnap.data().networkType}`;
-    list.appendChild(li);
-  });
+async function loadWebsites(){
+  const snapshot=await get(dbRef);
+  if(snapshot.exists()) websites=Object.values(snapshot.val());
+  else websites=[];
+  initDashboard();
+
+  document.getElementById("loadingScreen").style.display="none";
+  document.getElementById("dashboard").style.display="flex";
 }
 
-addBtn.addEventListener("click", async () => {
-  const name = document.getElementById("company").value;
-  const url = document.getElementById("url").value;
-  const network = document.getElementById("network").value;
-  if (!name || !url || !network) return alert("Fill all fields");
-
-  await addDoc(collection(db, "websites"), {
-    name,
-    url,
-    networkType: network
-  });
-
-  document.getElementById("company").value = "";
-  document.getElementById("url").value = "";
-  document.getElementById("network").value = "";
-
-  loadWebsites();
-});
-
-// Load websites on page load
 loadWebsites();
+
+// REST OF YOUR ORIGINAL JS CODE HERE (UNCHANGED)
+
 </script>
 </body>
 </html>
