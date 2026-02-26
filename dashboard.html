@@ -108,6 +108,7 @@
           <option value="COFE CF-4G007e">COFE CF-4G007e</option>
         </select>
         <button id="addBtn">Add New</button>
+        <button id="saveBtn">Save Changes</button>
       </div>
 
       <select id="filter">
@@ -191,6 +192,7 @@ function initDashboard(){
   const addBtn=document.getElementById("addBtn");
   const filter=document.getElementById("filter");
   const search=document.getElementById("search");
+  const saveBtn=document.getElementById("saveBtn");
 
   monBtn.onclick=()=>toggleView('monitor');
   editBtn.onclick=()=>toggleView('edit');
@@ -198,6 +200,22 @@ function initDashboard(){
   addBtn.onclick=addWebsite;
   filter.onchange=renderTable;
   search.onkeyup=renderTable;
+
+  saveBtn.onclick=()=>{
+    // Loop through table rows and update websites array
+    const tbody=document.getElementById("websiteTable");
+    websites.forEach((site,i)=>{
+      if(tbody.rows[i]){
+        const row=tbody.rows[i];
+        site.name=row.cells[0].querySelector("input")?.value || site.name;
+        site.url=row.cells[1].querySelector("input")?.value || site.url;
+        site.networkType=row.cells[2].querySelector("select")?.value || site.networkType;
+      }
+    });
+    saveData();
+    alert("Changes saved to database!");
+    renderTable();
+  };
 
   function toggleView(mode){
     isEditMode=(mode==='edit');
@@ -242,14 +260,12 @@ function initDashboard(){
       const nameCell=document.createElement("td");
       if(isEditMode){
         const input=document.createElement("input"); input.value=site.name;
-        input.onchange=()=>{websites[i].name=input.value; saveData();}
         nameCell.appendChild(input);
       } else nameCell.innerText=site.name;
 
       const urlCell=document.createElement("td");
       if(isEditMode){
         const input=document.createElement("input"); input.value=site.url;
-        input.onchange=()=>{websites[i].url=input.value; saveData();}
         urlCell.appendChild(input);
       } else { const a=document.createElement("a"); a.href=site.url; a.target="_blank"; a.innerText=site.url; urlCell.appendChild(a); }
 
@@ -261,7 +277,6 @@ function initDashboard(){
           if(site.networkType===opt) o.selected=true;
           select.appendChild(o);
         });
-        select.onchange=()=>{websites[i].networkType=select.value; saveData();}
         networkCell.appendChild(select);
       } else networkCell.innerText=site.networkType;
 
@@ -290,7 +305,6 @@ function initDashboard(){
     document.getElementById("liveCount").innerText = liveCount;
     document.getElementById("downCount").innerText = downCount;
 
-    // Optional: dynamically color card numbers
     document.querySelector(".liveCard p").style.color = liveCount>0?"#2a9d8f":"#555";
     document.querySelector(".downCard p").style.color = downCount>0?"#e63946":"#555";
   }
