@@ -2,82 +2,142 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TrataSoft Dashboard</title>
-
+<title>TrataSoft Dashboard - Optimized</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
-body{background:#f4f6f9;color:#333;visibility:hidden;}
-body.loaded{visibility:visible;}
+  /* ===== Global ===== */
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
+  body { background:#f4f6f9; color:#333; }
 
-#loadingScreen{
-  position:fixed;
-  width:100%;
-  height:100%;
-  background:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  z-index:9999;
-}
+  a { color:#1d3557; text-decoration:none; }
+  a:hover { text-decoration:underline; }
 
-.loader{
-  border:6px solid #eee;
-  border-top:6px solid #1d3557;
-  border-radius:50%;
-  width:50px;
-  height:50px;
-  animation:spin 1s linear infinite;
-  margin-bottom:15px;
-}
+  /* ===== Loading Spinner ===== */
+  .loading { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999; }
+  .spinner { width:50px; height:50px; border:4px solid #f3f3f3; border-top:4px solid #1d3557; border-radius:50%; animation:spin 1s linear infinite; }
+  @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
 
-@keyframes spin{
-  0%{transform:rotate(0deg);}
-  100%{transform:rotate(360deg);}
-}
+  /* ===== Dashboard Layout ===== */
+  #dashboard { display:flex; height:100vh; }
 
-#dashboard{display:flex;height:100vh;}
+  /* Sidebar */
+  .sidebar {
+    width:220px; background:#1d3557; color:white; padding:20px 10px; display:flex; flex-direction:column;
+  }
+  .sidebar h2 { text-align:center; margin-bottom:30px; font-size:1.5em; }
+  .sidebar ul { list-style:none; }
+  .sidebar li {
+    padding:10px 15px; margin-bottom:10px; cursor:pointer; border-radius:5px;
+    transition: background 0.2s;
+  }
+  .sidebar li:hover, .sidebar li.active { background:#457b9d; }
 
-.sidebar{width:220px;background:#1d3557;color:white;padding:20px 10px;display:flex;flex-direction:column;}
-.sidebar h2{text-align:center;margin-bottom:30px;}
-.sidebar ul{list-style:none;}
-.sidebar li{padding:10px 15px;margin-bottom:10px;cursor:pointer;border-radius:5px;}
-.sidebar li:hover,.sidebar li.active{background:#457b9d;}
+  /* Main Content */
+  .main { flex:1; display:flex; flex-direction:column; padding:20px; overflow:auto; }
 
-.main{flex:1;display:flex;flex-direction:column;padding:20px;overflow:auto;}
+  /* Topbar */
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .topbar h2 { font-size:1.5em; }
+  .topbar button { padding:6px 12px; border:none; background:#e63946; color:white; border-radius:5px; cursor:pointer; }
+  .topbar button:hover { background:#d62828; }
 
-.cards{display:flex;gap:15px;margin-bottom:20px;}
-.card{flex:1;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);text-align:center;}
-.liveCard{border-top:4px solid #2a9d8f;}
-.downCard{border-top:4px solid #e63946;}
+  /* Cards */
+  .cards { display:flex; gap:15px; margin-bottom:20px; }
+  .card { flex:1; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
+  .card h3 { margin-bottom:10px; color:#1d3557; }
+  .liveCard { border-top:4px solid #2a9d8f; }
+  .downCard { border-top:4px solid #e63946; }
 
-.tableBox{overflow:auto;background:white;border-radius:8px;padding:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-table{width:100%;border-collapse:collapse;}
-th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd;}
-th{background:#f1f1f1;}
+  /* Pagination */
+  .pagination { display:flex; gap:10px; justify-content:center; margin:20px 0; }
+  .page-btn { padding:8px 12px; border:1px solid #ccc; background:white; cursor:pointer; border-radius:4px; }
+  .page-btn.active, .page-btn:hover { background:#1d3557; color:white; }
+
+  /* Controls */
+  .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+  #adminTools { display:none; gap:10px; flex-wrap:wrap; }
+  #adminTools input, #adminTools select, .controls select, .controls input[type="text"], #adminTools button {
+    padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:0.9em;
+  }
+  #adminTools button { background:#1d3557; color:white; border:none; cursor:pointer; }
+  #adminTools button:hover { background:#457b9d; }
+
+  /* Table */
+  .tableBox { overflow:auto; background:white; border-radius:8px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px; border-bottom:1px solid #ddd; }
+  th { background:#f1f1f1; }
+  td input, td select { width:100%; padding:4px; }
+
+  td button { padding:4px 8px; border:none; background:#e63946; color:white; border-radius:4px; cursor:pointer; margin-right:5px; }
+  td button:hover { background:#d62828; }
+  .status-checking { color:#f4a261; font-weight:bold; }
+  .status-live { color:#2a9d8f; font-weight:bold; text-transform:uppercase; }
+  .status-down { color:#e63946; font-weight:bold; text-transform:uppercase; }
+
+  /* Responsive */
+  @media(max-width:800px){
+    #dashboard { flex-direction:column; }
+    .sidebar { width:100%; display:flex; flex-direction:row; justify-content:space-around; }
+    .main { padding:10px; }
+    .cards { flex-direction:column; }
+    .controls { flex-direction:column; }
+  }
 </style>
 </head>
 <body>
 
-<!-- Loading Screen -->
-<div id="loadingScreen">
-  <div class="loader"></div>
-  <h3>Loading Dashboard...</h3>
+<!-- Loading Spinner -->
+<div id="loading" class="loading">
+  <div class="spinner"></div>
 </div>
 
-<div id="dashboard">
+<div id="dashboard" style="display:none;">
   <div class="sidebar">
     <h2>TrataSoft</h2>
     <ul>
-      <li class="active">Live Monitoring</li>
+      <li id="monBtn" class="active">View Monitoring</li>
+      <li id="editBtn">Settings / Edit</li>
     </ul>
   </div>
 
   <div class="main">
+    <div class="topbar">
+      <h2 id="viewTitle">Live Monitoring</h2>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
     <div class="cards">
       <div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
       <div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
       <div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
+    </div>
+
+    <div class="controls">
+      <div id="adminTools">
+        <input type="text" id="newName" placeholder="Company Name">
+        <input type="text" id="newUrl" placeholder="Website URL">
+        <select id="newNetwork">
+          <option value="">Select Network Type</option>
+          <option value="LAN">LAN</option>
+          <option value="Wi-Fi">Wi-Fi</option>
+          <option value="COFE CF-4G007e">COFE CF-4G007e</option>
+        </select>
+        <button id="addBtn">Add New</button>
+        <button id="saveBtn">Save Changes</button>
+      </div>
+
+      <select id="filter">
+        <option value="all">Filter: All</option>
+        <option value="live">Live</option>
+        <option value="down">Down</option>
+        <option value="checking">Checking</option>
+      </select>
+      <input type="text" id="search" placeholder="Search site...">
+      <select id="pageSize">
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select>
     </div>
 
     <div class="tableBox">
@@ -86,18 +146,23 @@ th{background:#f1f1f1;}
           <tr>
             <th>Company</th>
             <th>Website</th>
+            <th>Network</th>
             <th>Status</th>
+            <th id="actionHeader" style="display:none;">Action</th>
           </tr>
         </thead>
         <tbody id="websiteTable"></tbody>
       </table>
     </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyC1I7uggV3I8Z7pmbpWQmJZO_mHlWQ7qRc",
@@ -106,61 +171,364 @@ const firebaseConfig = {
   projectId:"aitdata-1f856",
   storageBucket:"aitdata-1f856.firebasestorage.app",
   messagingSenderId:"535350785851",
-  appId:"1:535350785851:web:67abe23a6da1dca7fe291e"
+  appId:"1:535350785851:web:67abe23a6da1dca7fe291e",
+  measurementId:"G-82Y1DL677C"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dbRef = ref(db,"websiteData");
+const dbRef = ref(db, "websiteData");
 
-let websites=[];
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
 
-async function loadWebsites(){
-  try{
-    const snapshot=await get(dbRef);
+let websites = [];
+let isEditMode = false;
+let currentPage = 1;
+let pageSize = 25;
+let visibleSites = [];
 
-    if(snapshot.exists()){
-      websites=Object.values(snapshot.val());
+// Show loading
+document.getElementById('loading').style.display = 'flex';
+
+async function loadWebsites() {
+  try {
+    const snapshot = await get(dbRef);
+    if (snapshot.exists()) {
+      websites = Object.values(snapshot.val());
+    } else {
+      // Only create 50 test sites instead of 700
+      for (let i = 1; i <= 50; i++) {
+        let num = i.toString().padStart(3, '0');
+        websites.push({
+          id: i,
+          name: "TrataSoft " + num,
+          url: "https://trtdlaita" + num + ".tratasoft.com/login",
+          status: "checking",
+          networkType: "LAN",
+          lastChecked: Date.now()
+        });
+      }
+      saveData();
     }
-
-    renderTable();
-  }catch(e){
-    console.log("Error:",e);
+    hideLoading();
+    initDashboard();
+  } catch (error) {
+    console.error('Error loading data:', error);
+    hideLoading();
+    alert('Error loading data. Using test data.');
+    initDashboard();
   }
-
-  // Show dashboard only after Firebase response
-  document.getElementById("loadingScreen").style.display="none";
-  document.body.classList.add("loaded");
 }
 
-function renderTable(){
-  const tbody=document.getElementById("websiteTable");
-  tbody.innerHTML="";
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'flex';
+}
 
-  let live=0, down=0;
-
-  websites.forEach(site=>{
-    const row=document.createElement("tr");
-
-    row.innerHTML=`
-      <td>${site.name}</td>
-      <td><a href="${site.url}" target="_blank">${site.url}</a></td>
-      <td>${site.status || "UNKNOWN"}</td>
-    `;
-
-    if(site.status==="live") live++;
-    if(site.status==="down") down++;
-
-    tbody.appendChild(row);
-  });
-
-  document.getElementById("totalCount").innerText=websites.length;
-  document.getElementById("liveCount").innerText=live;
-  document.getElementById("downCount").innerText=down;
+function saveData() {
+  const updates = {};
+  websites.forEach((site, i) => updates[i] = site);
+  set(dbRef, updates).catch(e => console.error('Save error:', e));
 }
 
 loadWebsites();
+
+function initDashboard() {
+  const monBtn = document.getElementById("monBtn");
+  const editBtn = document.getElementById("editBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const addBtn = document.getElementById("addBtn");
+  const filter = document.getElementById("filter");
+  const search = document.getElementById("search");
+  const saveBtn = document.getElementById("saveBtn");
+  const pageSizeSelect = document.getElementById("pageSize");
+
+  monBtn.onclick = () => toggleView('monitor');
+  editBtn.onclick = () => toggleView('edit');
+  logoutBtn.onclick = () => {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "index.html";
+  };
+  addBtn.onclick = addWebsite;
+  filter.onchange = renderTable;
+  search.onkeyup = debounce(renderTable, 300);
+  pageSizeSelect.onchange = () => {
+    pageSize = parseInt(pageSizeSelect.value);
+    currentPage = 1;
+    renderTable();
+  };
+
+  saveBtn.onclick = saveChanges;
+
+  function toggleView(mode) {
+    isEditMode = (mode === 'edit');
+    document.getElementById('adminTools').style.display = isEditMode ? "flex" : "none";
+    document.getElementById('actionHeader').style.display = isEditMode ? "table-cell" : "none";
+    document.getElementById('viewTitle').innerText = isEditMode ? "Management Mode" : "Live Monitoring";
+    editBtn.classList.toggle('active', isEditMode);
+    monBtn.classList.toggle('active', !isEditMode);
+    renderTable();
+  }
+
+  function addWebsite() {
+    const name = document.getElementById("newName").value.trim();
+    const url = document.getElementById("newUrl").value.trim();
+    const network = document.getElementById("newNetwork").value;
+    if (!name || !url || !network) return alert("Fill all fields");
+    
+    const newSite = {
+      id: Date.now(),
+      name,
+      url,
+      status: "checking",
+      networkType: network,
+      lastChecked: Date.now()
+    };
+    websites.unshift(newSite); // Add to beginning
+    saveData();
+    document.getElementById("newName").value = "";
+    document.getElementById("newUrl").value = "";
+    document.getElementById("newNetwork").value = "";
+    currentPage = 1;
+    renderTable();
+  }
+
+  window.deleteWebsite = function (index) {
+    if (confirm("Delete this entry?")) {
+      websites.splice(index, 1);
+      saveData();
+      renderTable();
+    }
+  };
+
+  function saveChanges() {
+    const tbody = document.getElementById("websiteTable");
+    Array.from(tbody.rows).forEach((row, rowIndex) => {
+      const globalIndex = (currentPage - 1) * pageSize + rowIndex;
+      if (websites[globalIndex]) {
+        websites[globalIndex].name = row.cells[0].querySelector("input")?.value || websites[globalIndex].name;
+        websites[globalIndex].url = row.cells[1].querySelector("input")?.value || websites[globalIndex].url;
+        websites[globalIndex].networkType = row.cells[2].querySelector("select")?.value || websites[globalIndex].networkType;
+      }
+    });
+    saveData();
+    alert("Changes saved to database!");
+    if (!isEditMode) renderTable(); // Refresh status if in monitor mode
+  }
+}
+
+// Optimized rendering with pagination
+function renderTable() {
+  const f = document.getElementById("filter").value;
+  const s = document.getElementById("search").value.toLowerCase();
+  const tbody = document.getElementById("websiteTable");
+  
+  // Filter data
+  let filteredData = websites.filter((site, i) => {
+    if (f !== "all" && site.status !== f) return false;
+    if (!site.name.toLowerCase().includes(s) && !site.url.toLowerCase().includes(s)) return false;
+    return true;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  currentPage = Math.min(currentPage, totalPages || 1);
+  
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const pageData = filteredData.slice(startIndex, endIndex);
+
+  tbody.innerHTML = "";
+  visibleSites = []; // Track visible sites for status checking
+
+  pageData.forEach((site, rowIndex) => {
+    const globalIndex = websites.indexOf(site);
+    visibleSites.push(globalIndex);
+
+    const row = document.createElement("tr");
+
+    // Company
+    const nameCell = document.createElement("td");
+    if (isEditMode) {
+      const input = document.createElement("input");
+      input.value = site.name;
+      nameCell.appendChild(input);
+    } else {
+      nameCell.innerText = site.name;
+    }
+
+    // Website
+    const urlCell = document.createElement("td");
+    if (isEditMode) {
+      const input = document.createElement("input");
+      input.value = site.url;
+      urlCell.appendChild(input);
+    } else {
+      const a = document.createElement("a");
+      a.href = site.url;
+      a.target = "_blank";
+      a.innerText = site.url;
+      urlCell.appendChild(a);
+    }
+
+    // Network
+    const networkCell = document.createElement("td");
+    if (isEditMode) {
+      const select = document.createElement("select");
+      ["LAN", "Wi-Fi", "COFE CF-4G007e"].forEach(opt => {
+        const o = document.createElement("option");
+        o.value = opt;
+        o.text = opt;
+        if (site.networkType === opt) o.selected = true;
+        select.appendChild(o);
+      });
+      networkCell.appendChild(select);
+    } else {
+      networkCell.innerText = site.networkType;
+    }
+
+    // Status
+    const statusCell = document.createElement("td");
+    statusCell.className = `status-${site.status}`;
+    statusCell.innerText = site.status.toUpperCase();
+    
+    // Action
+    const actionCell = document.createElement("td");
+    actionCell.style.display = isEditMode ? "table-cell" : "none";
+    if (isEditMode) {
+      const btn = document.createElement("button");
+      btn.innerText = "Delete";
+      btn.onclick = () => deleteWebsite(globalIndex);
+      actionCell.appendChild(btn);
+    }
+
+    row.append(nameCell, urlCell, networkCell, statusCell, actionCell);
+    tbody.appendChild(row);
+  });
+
+  renderPagination(totalPages);
+  updateCounters(filteredData.length);
+  
+  // Check status of visible sites only
+  if (!isEditMode) {
+    setTimeout(() => checkVisibleStatus(), 100);
+  }
+}
+
+function renderPagination(totalPages) {
+  const pagination = document.getElementById("pagination");
+  pagination.innerHTML = "";
+  
+  if (totalPages <= 1) return;
+
+  // Previous button
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "page-btn";
+  prevBtn.innerText = "← Prev";
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.onclick = () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderTable();
+    }
+  };
+  pagination.appendChild(prevBtn);
+
+  // Page numbers
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const btn = document.createElement("button");
+    btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+    btn.innerText = i;
+    btn.onclick = () => {
+      currentPage = i;
+      renderTable();
+    };
+    pagination.appendChild(btn);
+  }
+
+  // Next button
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "page-btn";
+  nextBtn.innerText = "Next →";
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.onclick = () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTable();
+    }
+  };
+  pagination.appendChild(nextBtn);
+}
+
+// Optimized status checking - only visible sites
+async function checkVisibleStatus() {
+  for (let index of visibleSites) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const response = await fetch(websites[index].url, {
+        method: 'HEAD',
+        signal: controller.signal,
+        cache: 'no-cache'
+      });
+
+      clearTimeout(timeoutId);
+      websites[index].status = response.ok ? "live" : "down";
+      websites[index].lastChecked = Date.now();
+    } catch (error) {
+      websites[index].status = "down";
+      websites[index].lastChecked = Date.now();
+    }
+  }
+  updateCounters();
+}
+
+// Update counters
+function updateCounters(totalFiltered = websites.length) {
+  const liveCount = websites.filter(s => s.status === "live").length;
+  const downCount = websites.filter(s => s.status === "down").length;
+  const checkingCount = websites.length - liveCount - downCount;
+  
+  document.getElementById("totalCount").innerText = websites.length;
+  document.getElementById("liveCount").innerText = liveCount;
+  document.getElementById("downCount").innerText = downCount;
+
+  document.querySelector(".liveCard p").style.color = liveCount > 0 ? "#2a9d8f" : "#555";
+  document.querySelector(".downCard p").style.color = downCount > 0 ? "#e63946" : "#555";
+}
+
+// Auto-refresh every 60 seconds (only visible sites)
+setInterval(() => {
+  if (!isEditMode && visibleSites.length > 0) {
+    checkVisibleStatus();
+  }
+}, 60000);
+
+// Debounce utility
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Initial render
+setTimeout(renderTable, 500);
 </script>
 
 </body>
-</html>
+  </html>
