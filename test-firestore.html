@@ -1,65 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Doll Head Follow Mouse</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f0f0f0;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doll Maintenance Page</title>
 
-    .doll {
-      position: relative;
-      width: 200px;
-      height: 300px;
-    }
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  font-family: Arial, sans-serif;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+}
 
-    .head {
-      width: 150px;
-      height: 150px;
-      background: peachpuff;
-      border-radius: 50%;
-      position: absolute;
-      top: 0;
-      left: 25px;
-      transform-origin: center bottom;
-      transition: transform 0.1s linear;
-    }
+.container {
+  position: relative;
+}
 
-    .body {
-      width: 120px;
-      height: 150px;
-      background: pink;
-      position: absolute;
-      bottom: 0;
-      left: 40px;
-      border-radius: 20px;
-    }
-  </style>
+h1 {
+  margin-bottom: 10px;
+}
+
+p {
+  margin-bottom: 40px;
+}
+
+/* Doll */
+.doll {
+  position: relative;
+  width: 200px;
+  height: 300px;
+  margin: auto;
+}
+
+.head {
+  width: 140px;
+  height: 140px;
+  background: peachpuff;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 30px;
+  transform-origin: center bottom;
+  transition: transform 0.1s linear;
+}
+
+.body {
+  width: 120px;
+  height: 160px;
+  background: pink;
+  position: absolute;
+  bottom: 0;
+  left: 40px;
+  border-radius: 20px;
+}
+
+/* Eyes */
+.eye {
+  width: 20px;
+  height: 20px;
+  background: black;
+  border-radius: 50%;
+  position: absolute;
+  top: 50px;
+}
+
+.eye.left {
+  left: 35px;
+}
+
+.eye.right {
+  right: 35px;
+}
+
+/* Loader */
+.loader {
+  margin: 20px auto;
+  width: 40px;
+  height: 40px;
+  border: 4px solid white;
+  border-top: 4px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+</style>
 </head>
+
 <body>
 
-<div class="doll">
-  <div class="head" id="head"></div>
-  <div class="body"></div>
+<div class="container">
+  <h1>🚧 Website Under Maintenance</h1>
+  <div class="loader"></div>
+  <p>We're working on improvements.<br>Please come back soon.</p>
+
+  <div class="doll">
+    <div class="head" id="head">
+      <div class="eye left"></div>
+      <div class="eye right"></div>
+    </div>
+    <div class="body"></div>
+  </div>
 </div>
 
 <script>
-  const head = document.getElementById("head");
+const head = document.getElementById("head");
 
-  document.addEventListener("mousemove", (event) => {
-    const screenWidth = window.innerWidth;
-    const mouseX = event.clientX;
+document.addEventListener("mousemove", (event) => {
+  const screenWidth = window.innerWidth;
+  const mouseX = event.clientX;
 
-    // Convert mouse position to rotation (-30deg to +30deg)
-    const rotate = ((mouseX / screenWidth) - 0.5) * 60;
+  // Rotate between -30deg and +30deg
+  const rotate = ((mouseX / screenWidth) - 0.5) * 60;
 
-    head.style.transform = `rotate(${rotate}deg)`;
-  });
+  head.style.transform = `rotate(${rotate}deg)`;
+});
 </script>
 
 </body>
