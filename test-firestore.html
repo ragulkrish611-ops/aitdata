@@ -134,6 +134,22 @@ body {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  position: relative;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  color: #991b1b;
 }
 
 .table-header {
@@ -158,6 +174,12 @@ td {
 
 tr:hover {
   background: #f8fafc;
+}
+
+tr.no-data {
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
 }
 
 .company-name {
@@ -216,41 +238,17 @@ tr:hover {
 }
 
 @media (max-width: 768px) {
-  body {
-    padding: 16px;
-  }
-  
-  .controls {
-    padding: 16px 20px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-  
-  th, td {
-    padding: 12px 16px;
-  }
-  
-  .header h1 {
-    font-size: 1.5rem;
-  }
+  body { padding: 16px; }
+  .controls { padding: 16px 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  th, td { padding: 12px 16px; }
+  .header h1 { font-size: 1.5rem; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter-group {
-    justify-content: center;
-  }
+  .stats-grid { grid-template-columns: 1fr; }
+  .controls { flex-direction: column; align-items: stretch; }
+  .filter-group { justify-content: center; }
 }
 </style>
 </head>
@@ -287,8 +285,9 @@ tr:hover {
     </div>
   </div>
 
-  <div class="status-table">
-    <table>
+  <div class="status-table" id="tableContainer">
+    <div class="loading" id="loading">Loading services...</div>
+    <table style="display: none;">
       <thead class="table-header">
         <tr>
           <th>Company</th>
@@ -318,69 +317,99 @@ const firebaseConfig = {
   measurementId: "G-J2DDR8D9QN"
 };
 
+try {
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
   
-};
+  // Professional database path - adjust if your data is in a subfolder
+  const dbRef = ref(db, "websiteData");
+  
+  let allWebsites = [];
+  const statusFilter = document.getElementById('statusFilter');
+  const loadingEl = document.getElementById('loading');
+  const tableEl = document.querySelector('table');
+  const tableContainer = document.getElementById('tableContainer');
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dbRef = ref(db, "websiteData");
-
-let allWebsites = [];
-
-const statusFilter = document.getElementById('statusFilter');
-
-onValue(dbRef, (snapshot) => {
-  if (!snapshot.exists()) return;
-  allWebsites = Object.values(snapshot.val());
-  render(allWebsites, statusFilter.value);
-  updateTimestamp();
-});
-
-statusFilter.addEventListener('change', (e) => {
-  render(allWebsites, e.target.value);
-});
-
-function render(websites, filter = 'all') {
-  const tbody = document.getElementById("table");
-  tbody.innerHTML = "";
-  let live = 0, down = 0, total = 0;
-
-  const filteredWebsites = filter === 'all' 
-    ? websites 
-    : websites.filter(site => site.status === filter);
-
-  filteredWebsites.forEach(site => {
-    const row = document.createElement("tr");
-    const statusClass = site.status === 'live' ? 'status-live' : 'status-down';
-    const statusText = site.status?.toUpperCase() || 'UNKNOWN';
-
-    row.innerHTML = `
-      <td class="company-name">${site.name || 'N/A'}</td>
-      <td><a href="${site.url}" target="_blank" class="website-link">${site.url}</a></td>
-      <td><span class="network-badge">${site.networkType || 'Unknown'}</span></td>
-      <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-    `;
-
-    tbody.appendChild(row);
-
-    // Count all websites for stats (not filtered)
-    if (site.status === "live") live++;
-    if (site.status === "down") down++;
+  onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    
+    if (!data) {
+      showError('No data available in database');
+      return;
+    }
+    
+    allWebsites = Object.values(data);
+    render(allWebsites, statusFilter.value);
+    updateTimestamp();
+  }, (error) => {
+    console.error('Database error:', error);
+    showError('Connection error. Please check database permissions.');
   });
 
-  // Stats always show total counts, not filtered
-  document.getElementById("total").innerText = allWebsites.length;
-  document.getElementById("live").innerText = live;
-  document.getElementById("down").innerText = down;
-}
-
-function updateTimestamp() {
-  const now = new Date().toLocaleTimeString('en-IN', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    second: '2-digit'
+  statusFilter.addEventListener('change', (e) => {
+    render(allWebsites, e.target.value);
   });
-  document.getElementById("lastUpdated").textContent = `Last updated: ${now}`;
+
+  function render(websites, filter = 'all') {
+    const tbody = document.getElementById("table");
+    tbody.innerHTML = "";
+    
+    let live = 0, down = 0;
+    
+    const filteredWebsites = filter === 'all' 
+      ? websites 
+      : websites.filter(site => site.status === filter);
+
+    if (filteredWebsites.length === 0) {
+      tbody.innerHTML = '<tr class="no-data"><td colspan="4">No services match this filter</td></tr>';
+    } else {
+      filteredWebsites.forEach(site => {
+        const row = document.createElement("tr");
+        const statusClass = site.status === 'live' ? 'status-live' : 'status-down';
+        const statusText = site.status?.toUpperCase() || 'UNKNOWN';
+
+        row.innerHTML = `
+          <td class="company-name">${site.name || 'N/A'}</td>
+          <td><a href="${site.url}" target="_blank" class="website-link">${site.url}</a></td>
+          <td><span class="network-badge">${site.networkType || 'Unknown'}</span></td>
+          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+        `;
+        tbody.appendChild(row);
+
+        if (site.status === "live") live++;
+        if (site.status === "down") down++;
+      });
+    }
+
+    document.getElementById("total").innerText = websites.length;
+    document.getElementById("live").innerText = live;
+    document.getElementById("down").innerText = down;
+  }
+
+  function showError(message) {
+    const container = document.getElementById('tableContainer');
+    container.innerHTML = `<div class="error">${message}</div>`;
+  }
+
+  function updateTimestamp() {
+    const now = new Date().toLocaleTimeString('en-IN', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    document.getElementById("lastUpdated").textContent = `Last updated: ${now}`;
+    
+    // Hide loading and show table after first load
+    if (loadingEl && tableEl) {
+      loadingEl.style.display = 'none';
+      tableEl.style.display = 'table';
+    }
+  }
+
+} catch (error) {
+  console.error('Firebase initialization error:', error);
+  document.getElementById('tableContainer').innerHTML = 
+    '<div class="error">Failed to initialize monitoring service</div>';
 }
 </script>
 </body>
