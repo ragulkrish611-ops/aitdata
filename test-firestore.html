@@ -1,473 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>TrataSoft Dashboard - STABLE</title>
-<style>
-  /* ===== Same CSS as before - keeping it identical ===== */
-  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
-  body { background:#f4f6f9; color:#333; }
+  <title>Doll Head Follow Mouse</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f0f0;
+    }
 
-  a { color:#1d3557; text-decoration:none; }
-  a:hover { text-decoration:underline; }
+    .doll {
+      position: relative;
+      width: 200px;
+      height: 300px;
+    }
 
-  .loading { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999; }
-  .spinner { width:50px; height:50px; border:4px solid #f3f3f3; border-top:4px solid #1d3557; border-radius:50%; animation:spin 1s linear infinite; }
-  @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+    .head {
+      width: 150px;
+      height: 150px;
+      background: peachpuff;
+      border-radius: 50%;
+      position: absolute;
+      top: 0;
+      left: 25px;
+      transform-origin: center bottom;
+      transition: transform 0.1s linear;
+    }
 
-  #dashboard { display:flex; height:100vh; }
-
-  .sidebar { width:220px; background:#1d3557; color:white; padding:20px 10px; display:flex; flex-direction:column; }
-  .sidebar h2 { text-align:center; margin-bottom:30px; font-size:1.5em; }
-  .sidebar ul { list-style:none; }
-  .sidebar li { padding:10px 15px; margin-bottom:10px; cursor:pointer; border-radius:5px; transition: background 0.2s; }
-  .sidebar li:hover, .sidebar li.active { background:#457b9d; }
-
-  .main { flex:1; display:flex; flex-direction:column; padding:20px; overflow:auto; }
-
-  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-  .topbar h2 { font-size:1.5em; }
-  .topbar button { padding:6px 12px; border:none; background:#e63946; color:white; border-radius:5px; cursor:pointer; }
-  .topbar button:hover { background:#d62828; }
-
-  .cards { display:flex; gap:15px; margin-bottom:20px; }
-  .card { flex:1; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
-  .card h3 { margin-bottom:10px; color:#1d3557; }
-  .liveCard { border-top:4px solid #2a9d8f; }
-  .downCard { border-top:4px solid #e63946; }
-
-  .pagination { display:flex; gap:10px; justify-content:center; margin:20px 0; }
-  .page-btn { padding:8px 12px; border:1px solid #ccc; background:white; cursor:pointer; border-radius:4px; }
-  .page-btn.active, .page-btn:hover { background:#1d3557; color:white; }
-
-  .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
-  #adminTools { display:none; gap:10px; flex-wrap:wrap; }
-  #adminTools input, #adminTools select, .controls select, .controls input[type="text"], #adminTools button {
-    padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:0.9em;
-  }
-  #adminTools button { background:#1d3557; color:white; border:none; cursor:pointer; }
-  #adminTools button:hover { background:#457b9d; }
-
-  .tableBox { overflow:auto; background:white; border-radius:8px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-  table { width:100%; border-collapse:collapse; }
-  th, td { text-align:left; padding:10px; border-bottom:1px solid #ddd; }
-  th { background:#f1f1f1; }
-  td input, td select { width:100%; padding:4px; }
-
-  td button { padding:4px 8px; border:none; background:#e63946; color:white; border-radius:4px; cursor:pointer; margin-right:5px; }
-  td button:hover { background:#d62828; }
-  .status-checking { color:#f4a261; font-weight:bold; }
-  .status-live { color:#2a9d8f; font-weight:bold; text-transform:uppercase; }
-  .status-down { color:#e63946; font-weight:bold; text-transform:uppercase; }
-
-  @media(max-width:800px){
-    #dashboard { flex-direction:column; }
-    .sidebar { width:100%; display:flex; flex-direction:row; justify-content:space-around; }
-    .main { padding:10px; }
-    .cards { flex-direction:column; }
-    .controls { flex-direction:column; }
-  }
-</style>
+    .body {
+      width: 120px;
+      height: 150px;
+      background: pink;
+      position: absolute;
+      bottom: 0;
+      left: 40px;
+      border-radius: 20px;
+    }
+  </style>
 </head>
 <body>
 
-<div id="loading" class="loading">
-  <div class="spinner"></div>
+<div class="doll">
+  <div class="head" id="head"></div>
+  <div class="body"></div>
 </div>
 
-<div id="dashboard" style="display:none;">
-  <div class="sidebar">
-    <h2>TrataSoft</h2>
-    <ul>
-      <li id="monBtn" class="active">View Monitoring</li>
-      <li id="editBtn">Settings / Edit</li>
-    </ul>
-  </div>
+<script>
+  const head = document.getElementById("head");
 
-  <div class="main">
-    <div class="topbar">
-      <h2 id="viewTitle">Live Monitoring</h2>
-      <button id="logoutBtn">Logout</button>
-    </div>
+  document.addEventListener("mousemove", (event) => {
+    const screenWidth = window.innerWidth;
+    const mouseX = event.clientX;
 
-    <div class="cards">
-      <div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
-      <div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
-      <div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
-    </div>
+    // Convert mouse position to rotation (-30deg to +30deg)
+    const rotate = ((mouseX / screenWidth) - 0.5) * 60;
 
-    <div class="controls">
-      <div id="adminTools">
-        <input type="text" id="newName" placeholder="Company Name">
-        <input type="text" id="newUrl" placeholder="Website URL">
-        <select id="newNetwork">
-          <option value="">Select Network Type</option>
-          <option value="LAN">LAN</option>
-          <option value="Wi-Fi">Wi-Fi</option>
-          <option value="COFE CF-4G007e">COFE CF-4G007e</option>
-        </select>
-        <button id="addBtn">Add New</button>
-        <button id="saveBtn">Save Changes</button>
-        <button id="clearFakeBtn">Clear Test Data</button>
-      </div>
-
-      <select id="filter">
-        <option value="all">Filter: All</option>
-        <option value="live">Live</option>
-        <option value="down">Down</option>
-        <option value="checking">Checking</option>
-      </select>
-      <input type="text" id="search" placeholder="Search site...">
-      <select id="pageSize">
-        <option value="25">25 per page</option>
-        <option value="50">50 per page</option>
-        <option value="100">100 per page</option>
-      </select>
-    </div>
-
-    <div class="tableBox">
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Website</th>
-            <th>Network</th>
-            <th>Status</th>
-            <th id="actionHeader" style="display:none;">Action</th>
-          </tr>
-        </thead>
-        <tbody id="websiteTable"></tbody>
-      </table>
-    </div>
-
-    <div class="pagination" id="pagination"></div>
-  </div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyC1I7uggV3I8Z7pmbpWQmJZO_mHlWQ7qRc",
-  authDomain:"aitdata-1f856.firebaseapp.com",
-  databaseURL:"https://aitdata-1f856-default-rtdb.firebaseio.com",
-  projectId:"aitdata-1f856",
-  storageBucket:"aitdata-1f856.firebasestorage.app",
-  messagingSenderId:"535350785851",
-  appId:"1:535350785851:web:67abe23a6da1dca7fe291e",
-  measurementId:"G-82Y1DL677C"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dbRef = ref(db, "websiteData");
-
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
-
-let websites = [];
-let isEditMode = false;
-let currentPage = 1;
-let pageSize = 25;
-let visibleSites = [];
-let statusCheckActive = false;
-
-// Show loading
-document.getElementById('loading').style.display = 'flex';
-
-async function loadWebsites() {
-  try {
-    const snapshot = await get(dbRef);
-    if (snapshot.exists()) {
-      websites = Object.values(snapshot.val());
-      console.log(`✅ Loaded ${websites.length} REAL sites from Firebase`);
-    } else {
-      websites = []; // NO AUTO-CREATE 700 FAKE SITES
-      console.log('ℹ️ No data in Firebase - empty dashboard');
-    }
-    hideLoading();
-    initDashboard();
-    updateCounters(); // Initial stable count
-  } catch (error) {
-    console.error('Error loading:', error);
-    websites = [];
-    hideLoading();
-    alert('Using empty dashboard - add sites manually');
-    initDashboard();
-  }
-}
-
-function hideLoading() {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'flex';
-}
-
-function saveData() {
-  const updates = {};
-  websites.forEach((site, i) => updates[i] = site);
-  set(dbRef, updates).catch(e => console.error('Save error:', e));
-}
-
-loadWebsites();
-
-function initDashboard() {
-  // All your existing event listeners...
-  const monBtn = document.getElementById("monBtn");
-  const editBtn = document.getElementById("editBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const addBtn = document.getElementById("addBtn");
-  const filter = document.getElementById("filter");
-  const search = document.getElementById("search");
-  const saveBtn = document.getElementById("saveBtn");
-  const pageSizeSelect = document.getElementById("pageSize");
-  const clearFakeBtn = document.getElementById("clearFakeBtn");
-
-  monBtn.onclick = () => toggleView('monitor');
-  editBtn.onclick = () => toggleView('edit');
-  logoutBtn.onclick = () => {
-    localStorage.removeItem("loggedIn");
-    window.location.href = "index.html";
-  };
-  addBtn.onclick = addWebsite;
-  filter.onchange = renderTable;
-  search.onkeyup = debounce(renderTable, 300);
-  pageSizeSelect.onchange = () => {
-    pageSize = parseInt(pageSizeSelect.value);
-    currentPage = 1;
-    renderTable();
-  };
-  clearFakeBtn.onclick = clearTestData;
-
-  saveBtn.onclick = saveChanges;
-
-  function toggleView(mode) {
-    isEditMode = (mode === 'edit');
-    document.getElementById('adminTools').style.display = isEditMode ? "flex" : "none";
-    document.getElementById('actionHeader').style.display = isEditMode ? "table-cell" : "none";
-    document.getElementById('viewTitle').innerText = isEditMode ? "Management Mode" : "Live Monitoring";
-    editBtn.classList.toggle('active', isEditMode);
-    monBtn.classList.toggle('active', !isEditMode);
-    
-    // ALWAYS refresh table - same data in both modes
-    renderTable();
-    
-    // Only start status checking in monitor mode
-    if (!isEditMode && websites.length > 0) {
-      startStatusChecking();
-    }
-  }
-
-  function clearTestData() {
-    if (confirm('Clear all test data? Real sites will remain.')) {
-      websites = websites.filter(site => !site.name.includes('TrataSoft'));
-      saveData();
-      renderTable();
-      alert(`${websites.length} real sites remaining`);
-    }
-  }
-
-  // ... rest of functions same as before ...
-  window.deleteWebsite = function (index) {
-    if (confirm("Delete this entry?")) {
-      websites.splice(index, 1);
-      saveData();
-      renderTable();
-    }
-  };
-
-  function saveChanges() {
-    const tbody = document.getElementById("websiteTable");
-    Array.from(tbody.rows).forEach((row, rowIndex) => {
-      const globalIndex = (currentPage - 1) * pageSize + rowIndex;
-      if (websites[globalIndex]) {
-        websites[globalIndex].name = row.cells[0].querySelector("input")?.value || websites[globalIndex].name;
-        websites[globalIndex].url = row.cells[1].querySelector("input")?.value || websites[globalIndex].url;
-        websites[globalIndex].networkType = row.cells[2].querySelector("select")?.value || websites[globalIndex].networkType;
-      }
-    });
-    saveData();
-    alert("✅ Changes saved! Live count stable.");
-  }
-
-  function addWebsite() {
-    const name = document.getElementById("newName").value.trim();
-    const url = document.getElementById("newUrl").value.trim();
-    const network = document.getElementById("newNetwork").value;
-    if (!name || !url || !network) return alert("Fill all fields");
-    
-    websites.unshift({
-      id: Date.now(),
-      name, url, status: "checking",
-      networkType: network,
-      lastChecked: Date.now()
-    });
-    saveData();
-    document.getElementById("newName").value = "";
-    document.getElementById("newUrl").value = "";
-    document.getElementById("newNetwork").value = "";
-    currentPage = 1;
-    renderTable();
-  }
-}
-
-// STABLE COUNTER - Only updates from real status changes
-function updateCounters() {
-  const liveCount = websites.filter(s => s.status === "live").length;
-  const downCount = websites.filter(s => s.status === "down").length;
-  
-  document.getElementById("totalCount").innerText = websites.length;
-  document.getElementById("liveCount").innerText = liveCount;
-  document.getElementById("downCount").innerText = downCount;
-
-  document.querySelector(".liveCard p").style.color = liveCount > 0 ? "#2a9d8f" : "#555";
-  document.querySelector(".downCard p").style.color = downCount > 0 ? "#e63946" : "#555";
-}
-
-// FIXED Status Checking - Only runs in Monitor mode
-async function checkVisibleStatus() {
-  if (statusCheckActive) return; // Prevent multiple checks
-  statusCheckActive = true;
-  
-  console.log(`🔍 Checking ${visibleSites.length} visible sites...`);
-  
-  for (let index of visibleSites) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-      const response = await fetch(websites[index].url, {
-        method: 'HEAD',
-        signal: controller.signal,
-        cache: 'no-cache'
-      });
-
-      clearTimeout(timeoutId);
-      if (response.ok && websites[index].status !== "live") {
-        websites[index].status = "live";
-        console.log(`✅ ${websites[index].name} is LIVE`);
-      } else if (!response.ok && websites[index].status !== "down") {
-        websites[index].status = "down";
-      }
-    } catch {
-      if (websites[index].status !== "down") {
-        websites[index].status = "down";
-        console.log(`❌ ${websites[index].name} is DOWN`);
-      }
-    }
-    websites[index].lastChecked = Date.now();
-  }
-  
-  updateCounters(); // Only update after ALL checks
-  statusCheckActive = false;
-}
-
-function startStatusChecking() {
-  // Check immediately
-  if (visibleSites.length > 0) checkVisibleStatus();
-  
-  // Then every 60 seconds
-  setInterval(() => {
-    if (!isEditMode && visibleSites.length > 0) {
-      checkVisibleStatus();
-    }
-  }, 60000);
-}
-
-// Same renderTable, renderPagination, debounce as before...
-function renderTable() {
-  const f = document.getElementById("filter").value;
-  const s = document.getElementById("search").value.toLowerCase();
-  const tbody = document.getElementById("websiteTable");
-  
-  let filteredData = websites.filter((site) => {
-    if (f !== "all" && site.status !== f) return false;
-    if (!site.name?.toLowerCase().includes(s) && !site.url?.toLowerCase().includes(s)) return false;
-    return true;
+    head.style.transform = `rotate(${rotate}deg)`;
   });
-
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  currentPage = Math.min(currentPage, totalPages || 1);
-  
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const pageData = filteredData.slice(startIndex, endIndex);
-
-  tbody.innerHTML = "";
-  visibleSites = [];
-
-  pageData.forEach((site, rowIndex) => {
-    const globalIndex = websites.indexOf(site);
-    visibleSites.push(globalIndex);
-
-    const row = document.createElement("tr");
-    // ... same row creation as before (name, url, network, status, action) ...
-    
-    const nameCell = document.createElement("td");
-    if (isEditMode) {
-      const input = document.createElement("input"); input.value = site.name || '';
-      nameCell.appendChild(input);
-    } else nameCell.innerText = site.name || 'N/A';
-
-    const urlCell = document.createElement("td");
-    if (isEditMode) {
-      const input = document.createElement("input"); input.value = site.url || '';
-      urlCell.appendChild(input);
-    } else { 
-      const a = document.createElement("a"); 
-      a.href = site.url || '#'; 
-      a.target = "_blank"; 
-      a.innerText = site.url || 'N/A'; 
-      urlCell.appendChild(a); 
-    }
-
-    const networkCell = document.createElement("td");
-    if (isEditMode) {
-      const select = document.createElement("select");
-      ["LAN","Wi-Fi","COFE CF-4G007e"].forEach(opt=>{
-        const o = document.createElement("option"); o.value=opt; o.text=opt;
-        if(site.networkType===opt) o.selected=true;
-        select.appendChild(o);
-      });
-      networkCell.appendChild(select);
-    } else networkCell.innerText = site.networkType || 'N/A';
-
-    const statusCell = document.createElement("td");
-    statusCell.className = `status-${site.status || 'checking'}`;
-    statusCell.innerText = (site.status || 'checking').toUpperCase();
-
-    const actionCell = document.createElement("td"); 
-    actionCell.style.display = isEditMode ? "table-cell" : "none";
-    if (isEditMode) { 
-      const btn = document.createElement("button"); 
-      btn.innerText = "Delete"; 
-      btn.onclick = () => window.deleteWebsite(globalIndex); 
-      actionCell.appendChild(btn); 
-    }
-
-    row.append(nameCell, urlCell, networkCell, statusCell, actionCell);
-    tbody.appendChild(row);
-  });
-
-  // Simple pagination (same as before)
-  const pagination = document.getElementById("pagination");
-  pagination.innerHTML = totalPages > 1 ? `Page ${currentPage} of ${totalPages}` : '';
-
-  updateCounters();
-}
-
-function debounce(func, wait) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
-// Initial render after 500ms
-setTimeout(() => {
-  renderTable();
-}, 500);
 </script>
 
 </body>
-  </html>
+</html>
