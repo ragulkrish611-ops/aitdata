@@ -1,129 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Doll Maintenance Page</title>
+<title>TrataSoft Monitoring</title>
 
 <style>
-body {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  font-family: Arial, sans-serif;
-  color: white;
-  text-align: center;
-  overflow: hidden;
-}
-
-.container {
-  position: relative;
-}
-
-h1 {
-  margin-bottom: 10px;
-}
-
-p {
-  margin-bottom: 40px;
-}
-
-/* Doll */
-.doll {
-  position: relative;
-  width: 200px;
-  height: 300px;
-  margin: auto;
-}
-
-.head {
-  width: 140px;
-  height: 140px;
-  background: peachpuff;
-  border-radius: 50%;
-  position: absolute;
-  top: 0;
-  left: 30px;
-  transform-origin: center bottom;
-  transition: transform 0.1s linear;
-}
-
-.body {
-  width: 120px;
-  height: 160px;
-  background: pink;
-  position: absolute;
-  bottom: 0;
-  left: 40px;
-  border-radius: 20px;
-}
-
-/* Eyes */
-.eye {
-  width: 20px;
-  height: 20px;
-  background: black;
-  border-radius: 50%;
-  position: absolute;
-  top: 50px;
-}
-
-.eye.left {
-  left: 35px;
-}
-
-.eye.right {
-  right: 35px;
-}
-
-/* Loader */
-.loader {
-  margin: 20px auto;
-  width: 40px;
-  height: 40px;
-  border: 4px solid white;
-  border-top: 4px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  100% { transform: rotate(360deg); }
-}
+body{font-family:Segoe UI;background:#f4f6f9;margin:0;padding:20px}
+h2{margin-bottom:20px}
+.cards{display:flex;gap:15px;margin-bottom:20px}
+.card{flex:1;background:white;padding:15px;border-radius:8px;text-align:center;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.live{color:#2a9d8f;font-weight:bold}
+.down{color:#e63946;font-weight:bold}
+table{width:100%;background:white;border-collapse:collapse;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}
 </style>
 </head>
-
 <body>
 
-<div class="container">
-  <h1>🚧 Website Under Maintenance</h1>
-  <div class="loader"></div>
-  <p>We're working on improvements.<br>Please come back soon.</p>
+<h2>Live Monitoring</h2>
 
-  <div class="doll">
-    <div class="head" id="head">
-      <div class="eye left"></div>
-      <div class="eye right"></div>
-    </div>
-    <div class="body"></div>
-  </div>
+<div class="cards">
+<div class="card"><h3>Total</h3><p id="total">0</p></div>
+<div class="card"><h3>Live</h3><p id="live">0</p></div>
+<div class="card"><h3>Down</h3><p id="down">0</p></div>
 </div>
 
-<script>
-const head = document.getElementById("head");
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Website</th>
+<th>Network</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
 
-document.addEventListener("mousemove", (event) => {
-  const screenWidth = window.innerWidth;
-  const mouseX = event.clientX;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // Rotate between -30deg and +30deg
-  const rotate = ((mouseX / screenWidth) - 0.5) * 60;
+const firebaseConfig = {
+  apiKey:"YOUR_KEY",
+  authDomain:"YOUR_DOMAIN",
+  databaseURL:"YOUR_DB_URL",
+  projectId:"YOUR_ID"
+};
 
-  head.style.transform = `rotate(${rotate}deg)`;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const dbRef = ref(db,"websiteData");
+
+onValue(dbRef,(snapshot)=>{
+  if(!snapshot.exists()) return;
+  const websites = Object.values(snapshot.val());
+  render(websites);
 });
+
+function render(websites){
+  const tbody=document.getElementById("table");
+  tbody.innerHTML="";
+  let live=0,down=0;
+
+  websites.forEach(site=>{
+    const row=document.createElement("tr");
+
+    row.innerHTML=`
+      <td>${site.name}</td>
+      <td><a href="${site.url}" target="_blank">${site.url}</a></td>
+      <td>${site.networkType}</td>
+      <td class="${site.status}">${site.status?.toUpperCase()}</td>
+    `;
+
+    if(site.status==="live") live++;
+    if(site.status==="down") down++;
+
+    tbody.appendChild(row);
+  });
+
+  document.getElementById("total").innerText=websites.length;
+  document.getElementById("live").innerText=live;
+  document.getElementById("down").innerText=down;
+}
 </script>
 
 </body>
