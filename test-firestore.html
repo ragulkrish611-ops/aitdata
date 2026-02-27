@@ -6,24 +6,16 @@
 <title>TrataSoft - Service Monitoring Dashboard</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #f8fafc;
   color: #1e293b;
-  line-height: 1.6;
   padding: 24px;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
+.container { max-width: 1400px; margin: 0 auto; }
 
 .header {
   background: white;
@@ -34,17 +26,8 @@ body {
   border-bottom: 3px solid #3b82f6;
 }
 
-.header h1 {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 4px;
-}
-
-.header p {
-  color: #64748b;
-  font-size: 0.95rem;
-}
+.header h1 { font-size: 1.75rem; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
+.header p { color: #64748b; font-size: 0.95rem; }
 
 .controls {
   background: white;
@@ -58,34 +41,15 @@ body {
   flex-wrap: wrap;
 }
 
-.filter-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.filter-label {
-  font-weight: 500;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
+.filter-group { display: flex; gap: 8px; align-items: center; }
+.filter-label { font-weight: 500; color: #374151; font-size: 0.9rem; }
 #statusFilter {
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   background: white;
   font-size: 0.9rem;
-  font-weight: 500;
-  color: #374151;
   min-width: 120px;
-  transition: all 0.2s ease;
-}
-
-#statusFilter:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .stats-grid {
@@ -100,14 +64,8 @@ body {
   padding: 24px;
   border-radius: 12px;
   text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   border-left: 4px solid;
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-  transform: translateY(-1px);
 }
 
 .total { border-left-color: #3b82f6; }
@@ -119,7 +77,6 @@ body {
   font-weight: 500;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   margin-bottom: 8px;
 }
 
@@ -133,79 +90,43 @@ body {
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
   position: relative;
+  min-height: 400px;
 }
 
-.loading {
+.loading, .error, .no-data {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #64748b;
-  font-size: 1rem;
-}
-
-.error {
-  text-align: center;
-  padding: 40px;
-  color: #991b1b;
-}
-
-.table-header {
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-  padding: 16px 20px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: #374151;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-td {
-  padding: 16px 20px;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-
-tr:hover {
-  background: #f8fafc;
-}
-
-tr.no-data {
   text-align: center;
   color: #64748b;
-  font-style: italic;
 }
 
-.company-name {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 0.95rem;
-}
+.error { color: #991b1b; }
+.no-data { font-style: italic; }
 
-.website-link {
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
+table { width: 100%; border-collapse: collapse; }
+.table-header { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
 
-.website-link:hover {
-  color: #2563eb;
-  text-decoration: underline;
+th { padding: 16px 20px; font-weight: 600; font-size: 0.875rem; color: #374151; text-transform: uppercase; }
+td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+tr:hover { background: #f8fafc; }
+.company-name { font-weight: 600; color: #1e293b; }
+.website-link { 
+  color: #3b82f6; 
+  text-decoration: none; 
+  font-weight: 500; 
 }
+.website-link:hover { color: #2563eb; text-decoration: underline; }
 
 .network-badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 6px;
   font-size: 0.75rem;
-  font-weight: 500;
   background: #f1f5f9;
   color: #64748b;
 }
@@ -216,39 +137,21 @@ tr.no-data {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
 }
 
-.status-live {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-down {
-  background: #fee2e2;
-  color: #991b1b;
-}
+.status-live { background: #dcfce7; color: #166534; }
+.status-down { background: #fee2e2; color: #991b1b; }
 
 .last-updated {
   text-align: center;
   color: #64748b;
   font-size: 0.875rem;
   margin-top: 24px;
-  padding: 12px 0;
 }
 
 @media (max-width: 768px) {
   body { padding: 16px; }
-  .controls { padding: 16px 20px; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  th, td { padding: 12px 16px; }
-  .header h1 { font-size: 1.5rem; }
-}
-
-@media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .controls { flex-direction: column; align-items: stretch; }
-  .filter-group { justify-content: center; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -261,7 +164,7 @@ tr.no-data {
 
   <div class="controls">
     <div class="filter-group">
-      <label for="statusFilter" class="filter-label">Filter Status:</label>
+      <label for="statusFilter" class="filter-label">Filter:</label>
       <select id="statusFilter">
         <option value="all">All Services</option>
         <option value="live">Live Only</option>
@@ -286,7 +189,7 @@ tr.no-data {
   </div>
 
   <div class="status-table" id="tableContainer">
-    <div class="loading" id="loading">Loading services...</div>
+    <div class="loading" id="loadingMsg">Connecting to database...</div>
     <table style="display: none;">
       <thead class="table-header">
         <tr>
@@ -296,7 +199,7 @@ tr.no-data {
           <th>Status</th>
         </tr>
       </thead>
-      <tbody id="table"></tbody>
+      <tbody id="tableBody"></tbody>
     </table>
   </div>
 
@@ -304,113 +207,105 @@ tr.no-data {
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  // Your Firebase config with databaseURL added
+  const firebaseConfig = {
+    apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
+    authDomain: "aitdata.firebaseapp.com",
+    databaseURL: "https://aitdata-default-rtdb.asia-south1.firebasedatabase.app/",
+    projectId: "aitdata",
+    storageBucket: "aitdata.firebasestorage.app",
+    messagingSenderId: "1086041126338",
+    appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b"
+  };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
-  authDomain: "aitdata.firebaseapp.com",
-  projectId: "aitdata",
-  storageBucket: "aitdata.firebasestorage.app",
-  messagingSenderId: "1086041126338",
-  appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b",
-  measurementId: "G-J2DDR8D9QN"
-};
+  // Import Firebase
+  import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js').then(async ({ initializeApp }) => {
+    import('https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js').then(async ({ getDatabase, ref, onValue }) => {
+      
+      try {
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db, "websiteData");
+        
+        let allWebsites = [];
+        const statusFilter = document.getElementById('statusFilter');
+        
+        onValue(dbRef, (snapshot) => {
+          const data = snapshot.val();
+          document.getElementById('loadingMsg').style.display = 'none';
+          document.querySelector('table').style.display = 'table';
+          
+          if (!data) {
+            showMessage('No data found. Add data to "websiteData" in Firebase.', 'error');
+            return;
+          }
+          
+          allWebsites = Object.values(data);
+          render(allWebsites, statusFilter.value);
+          updateTimestamp();
+          
+        }, (error) => {
+          console.error('Firebase Error:', error);
+          showMessage('Database access denied. Check Firebase rules.', 'error');
+        });
+        
+        statusFilter.addEventListener('change', (e) => {
+          render(allWebsites, e.target.value);
+        });
+        
+      } catch (error) {
+        console.error('Init Error:', error);
+        showMessage('Failed to connect to Firebase', 'error');
+      }
+    });
+  });
 
-try {
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  
-  // Professional database path - adjust if your data is in a subfolder
-  const dbRef = ref(db, "websiteData");
-  
-  let allWebsites = [];
-  const statusFilter = document.getElementById('statusFilter');
-  const loadingEl = document.getElementById('loading');
-  const tableEl = document.querySelector('table');
-  const tableContainer = document.getElementById('tableContainer');
-
-  onValue(dbRef, (snapshot) => {
-    const data = snapshot.val();
+  function render(websites, filter) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
     
-    if (!data) {
-      showError('No data available in database');
+    let liveCount = 0, downCount = 0;
+    const filtered = filter === 'all' ? websites : websites.filter(w => w.status === filter);
+    
+    if (filtered.length === 0) {
+      showMessage('No services match this filter', 'no-data');
       return;
     }
     
-    allWebsites = Object.values(data);
-    render(allWebsites, statusFilter.value);
-    updateTimestamp();
-  }, (error) => {
-    console.error('Database error:', error);
-    showError('Connection error. Please check database permissions.');
-  });
-
-  statusFilter.addEventListener('change', (e) => {
-    render(allWebsites, e.target.value);
-  });
-
-  function render(websites, filter = 'all') {
-    const tbody = document.getElementById("table");
-    tbody.innerHTML = "";
+    filtered.forEach(site => {
+      const row = document.createElement('tr');
+      const statusClass = site.status === 'live' ? 'status-live' : 'status-down';
+      
+      row.innerHTML = `
+        <td class="company-name">${site.name || 'N/A'}</td>
+        <td><a href="${site.url}" target="_blank" class="website-link">${site.url}</a></td>
+        <td><span class="network-badge">${site.networkType || 'Unknown'}</span></td>
+        <td><span class="status-badge ${statusClass}">${site.status?.toUpperCase()}</span></td>
+      `;
+      tbody.appendChild(row);
+      
+      if (site.status === 'live') liveCount++;
+      if (site.status === 'down') downCount++;
+    });
     
-    let live = 0, down = 0;
-    
-    const filteredWebsites = filter === 'all' 
-      ? websites 
-      : websites.filter(site => site.status === filter);
-
-    if (filteredWebsites.length === 0) {
-      tbody.innerHTML = '<tr class="no-data"><td colspan="4">No services match this filter</td></tr>';
-    } else {
-      filteredWebsites.forEach(site => {
-        const row = document.createElement("tr");
-        const statusClass = site.status === 'live' ? 'status-live' : 'status-down';
-        const statusText = site.status?.toUpperCase() || 'UNKNOWN';
-
-        row.innerHTML = `
-          <td class="company-name">${site.name || 'N/A'}</td>
-          <td><a href="${site.url}" target="_blank" class="website-link">${site.url}</a></td>
-          <td><span class="network-badge">${site.networkType || 'Unknown'}</span></td>
-          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-        `;
-        tbody.appendChild(row);
-
-        if (site.status === "live") live++;
-        if (site.status === "down") down++;
-      });
-    }
-
-    document.getElementById("total").innerText = websites.length;
-    document.getElementById("live").innerText = live;
-    document.getElementById("down").innerText = down;
+    document.getElementById('total').textContent = websites.length;
+    document.getElementById('live').textContent = liveCount;
+    document.getElementById('down').textContent = downCount;
   }
-
-  function showError(message) {
+  
+  function showMessage(msg, type) {
     const container = document.getElementById('tableContainer');
-    container.innerHTML = `<div class="error">${message}</div>`;
+    container.innerHTML = `<div class="${type}">${msg}</div>`;
   }
-
+  
   function updateTimestamp() {
-    const now = new Date().toLocaleTimeString('en-IN', { 
-      hour: '2-digit', 
+    const now = new Date().toLocaleTimeString('en-IN', {
+      hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
     });
-    document.getElementById("lastUpdated").textContent = `Last updated: ${now}`;
-    
-    // Hide loading and show table after first load
-    if (loadingEl && tableEl) {
-      loadingEl.style.display = 'none';
-      tableEl.style.display = 'table';
-    }
+    document.getElementById('lastUpdated').textContent = `Last updated: ${now}`;
   }
-
-} catch (error) {
-  console.error('Firebase initialization error:', error);
-  document.getElementById('tableContainer').innerHTML = 
-    '<div class="error">Failed to initialize monitoring service</div>';
-}
 </script>
 </body>
 </html>
