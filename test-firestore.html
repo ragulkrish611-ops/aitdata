@@ -2,244 +2,224 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TrataSoft Dashboard</title>
+<title>TrataSoft Monitoring Dashboard</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
-body{background:#f4f6f9;color:#333;}
-#dashboard{display:flex;height:100vh;}
-.sidebar{width:220px;background:#1d3557;color:#fff;padding:20px 10px;display:flex;flex-direction:column;}
-.sidebar h2{text-align:center;margin-bottom:30px;}
-.sidebar li{padding:10px;margin-bottom:10px;cursor:pointer;border-radius:5px;}
-.sidebar li:hover,.sidebar li.active{background:#457b9d;}
-.main{flex:1;padding:20px;overflow:auto;}
-.topbar{display:flex;justify-content:space-between;margin-bottom:20px;}
-.topbar button{padding:6px 12px;background:#e63946;color:#fff;border:none;border-radius:5px;cursor:pointer;}
-.cards{display:flex;gap:15px;margin-bottom:20px;}
-.card{flex:1;background:#fff;padding:20px;border-radius:8px;text-align:center;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-.liveCard{border-top:4px solid #2a9d8f;}
-.downCard{border-top:4px solid #e63946;}
-.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
-#adminTools{display:none;gap:10px;}
-input,select,button{padding:6px;border:1px solid #ccc;border-radius:4px;}
-#adminTools button{background:#1d3557;color:#fff;border:none;}
-table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;}
-th,td{padding:10px;border-bottom:1px solid #ddd;}
-th{background:#f1f1f1;}
-.live{color:#2a9d8f;font-weight:bold;}
-.down{color:#e63946;font-weight:bold;}
+  * { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI', sans-serif; }
+  body { background:#f4f6f9; color:#333; }
+  #dashboard { display:flex; height:100vh; }
+  .sidebar { width:220px; background:#1d3557; color:white; padding:20px; flex-shrink:0; }
+  .sidebar h2 { text-align:center; margin-bottom:30px; }
+  .sidebar ul { list-style:none; }
+  .sidebar li { padding:12px; margin-bottom:10px; cursor:pointer; border-radius:5px; transition:0.2s; }
+  .sidebar li:hover, .sidebar li.active { background:#457b9d; }
+  .main { flex:1; display:flex; flex-direction:column; padding:20px; overflow:hidden; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .cards { display:flex; gap:15px; margin-bottom:20px; }
+  .card { flex:1; background:white; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
+  .controls { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+  #adminTools { display:none; gap:10px; width:100%; margin-bottom:10px; }
+  .tableContainer { flex:1; overflow:auto; background:white; border-radius:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:12px; border-bottom:1px solid #ddd; }
+  th { background:#f8f9fa; position: sticky; top:0; }
+  .status-live { color:#2a9d8f; font-weight:bold; }
+  .status-down { color:#e63946; font-weight:bold; }
+  .pagination { padding:15px; display:flex; justify-content:center; align-items:center; gap:20px; background:white; border-top:1px solid #ddd; }
+  input, select, button { padding:8px; border:1px solid #ccc; border-radius:4px; }
+  .btn-blue { background:#1d3557; color:white; border:none; cursor:pointer; }
+  .btn-red { background:#e63946; color:white; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
 
 <div id="dashboard">
-<div class="sidebar">
-<h2>TrataSoft</h2>
-<ul>
-<li id="monBtn" class="active">View Monitoring</li>
-<li id="editBtn">Settings / Edit</li>
-</ul>
-</div>
+  <div class="sidebar">
+    <h2>TrataSoft</h2>
+    <ul>
+      <li id="monBtn" class="active">Monitoring</li>
+      <li id="editBtn">Management</li>
+    </ul>
+  </div>
 
-<div class="main">
-<div class="topbar">
-<h2 id="viewTitle">Live Monitoring</h2>
-<button id="logoutBtn">Logout</button>
-</div>
+  <div class="main">
+    <div class="topbar">
+      <h2 id="viewTitle">Live Monitoring</h2>
+      <button onclick="logout()" class="btn-red">Logout</button>
+    </div>
 
-<div class="cards">
-<div class="card"><h3>Total</h3><p id="totalCount">0</p></div>
-<div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
-<div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
-</div>
+    <div class="cards">
+      <div class="card"><h3>Total</h3><p id="totalCount">0</p></div>
+      <div class="card" style="border-top:4px solid #2a9d8f"><h3>Live</h3><p id="liveCount">0</p></div>
+      <div class="card" style="border-top:4px solid #e63946"><h3>Down</h3><p id="downCount">0</p></div>
+    </div>
 
-<div class="controls">
-<div id="adminTools">
-<input id="newName" placeholder="Company">
-<input id="newUrl" placeholder="Website URL">
-<select id="newNetwork">
-<option value="">Network</option>
-<option>LAN</option>
-<option>Wi-Fi</option>
-<option>COFE CF-4G007e</option>
-</select>
-<button id="addBtn">Add</button>
-<button id="saveBtn">Save</button>
-</div>
+    <div id="adminTools">
+      <input type="text" id="newName" placeholder="Name">
+      <input type="text" id="newUrl" placeholder="URL">
+      <select id="newNetwork">
+        <option value="LAN">LAN</option>
+        <option value="Wi-Fi">Wi-Fi</option>
+      </select>
+      <button onclick="addSite()" class="btn-blue">Add New</button>
+      <button onclick="saveAll()" class="btn-blue" style="background:#2a9d8f">Save All Changes</button>
+    </div>
 
-<select id="filter">
-<option value="all">All</option>
-<option value="live">Live</option>
-<option value="down">Down</option>
-</select>
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search..." style="flex:1" oninput="resetPage()">
+      <select id="filter" onchange="resetPage()">
+        <option value="all">All</option>
+        <option value="live">Live</option>
+        <option value="down">Down</option>
+      </select>
+    </div>
 
-<input id="search" placeholder="Search">
-</div>
+    <div class="tableContainer">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>URL</th>
+            <th>Network</th>
+            <th>Status</th>
+            <th id="actionHeader" style="display:none">Action</th>
+          </tr>
+        </thead>
+        <tbody id="websiteTable"></tbody>
+      </table>
+    </div>
 
-<table>
-<thead>
-<tr>
-<th>Company</th>
-<th>Website</th>
-<th>Network</th>
-<th>Status</th>
-<th id="actionHeader" style="display:none;">Action</th>
-</tr>
-</thead>
-<tbody id="websiteTable"></tbody>
-</table>
-
-</div>
+    <div class="pagination">
+      <button onclick="changePage(-1)" id="prevBtn">Previous</button>
+      <span id="pageLabel">Page 1</span>
+      <button onclick="changePage(1)" id="nextBtn">Next</button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
-apiKey:"AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
-authDomain:"aitdata.firebaseapp.com",
-databaseURL:"https://aitdata-default-rtdb.firebaseio.com",
-projectId:"aitdata",
-storageBucket:"aitdata.firebasestorage.app",
-messagingSenderId:"1086041126338",
-appId:"1:1086041126338:web:71fdfaa5ff41218ec1525b"
+  apiKey:"AIzaSyC1I7uggV3I8Z7pmbpWQmJZO_mHlWQ7qRc",
+  authDomain:"aitdata-1f856.firebaseapp.com",
+  databaseURL:"https://aitdata-1f856-default-rtdb.firebaseio.com",
+  projectId:"aitdata-1f856",
+  storageBucket:"aitdata-1f856.appspot.com",
+  messagingSenderId:"535350785851",
+  appId:"1:535350785851:web:67abe23a6da1dca7fe291e"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dbRef = ref(db,"websiteData");
+const dbRef = ref(db, "websiteData");
 
-if(localStorage.getItem("loggedIn")!=="true")
-window.location.href="index.html";
+let websites = [];
+let isEditMode = false;
+let currentPage = 1;
+const perPage = 50;
 
-let websites=[];
-let isEditMode=false;
+// ====== REAL-TIME LISTENER & INSTANT COUNTS ======
+onValue(dbRef, (snapshot) => {
+  const data = snapshot.val();
+  websites = [];
+  let total = 0, live = 0, down = 0;
 
-// 🔥 Auto Create Database + Realtime Listener
-onValue(dbRef,(snapshot)=>{
-if(snapshot.exists()){
-websites=Object.values(snapshot.val());
-renderTable();
-}else{
-const defaultData={};
-for(let i=1;i<=700;i++){
-let num=i.toString().padStart(3,'0');
-defaultData[i]={
-name:"TrataSoft "+num,
-url:"https://trtdlaita"+num+".tratasoft.com/login",
-status:"checking",
-networkType:"LAN"
-};
-}
-set(dbRef,defaultData);
-}
+  if (data) {
+    websites = Object.keys(data).map(key => {
+      const site = data[key];
+      site.id = key; // Attach Firebase key for edits
+      total++;
+      if(site.status==='live') live++;
+      else if(site.status==='down') down++;
+      return site;
+    });
+  }
+
+  // Update counts instantly
+  document.getElementById("totalCount").innerText = total;
+  document.getElementById("liveCount").innerText = live;
+  document.getElementById("downCount").innerText = down;
+
+  render();
 });
 
-// Save
-function saveData(){
-const obj={};
-websites.forEach((s,i)=>obj[i]=s);
-set(dbRef,obj);
+// ====== RENDER FUNCTION ======
+function render() {
+  const tbody = document.getElementById("websiteTable");
+  const search = document.getElementById("search").value.toLowerCase();
+  const filter = document.getElementById("filter").value;
+
+  const filtered = websites.filter(s => {
+    const matchSearch = s.name.toLowerCase().includes(search) || s.url.toLowerCase().includes(search);
+    const matchFilter = filter==='all' || s.status===filter;
+    return matchSearch && matchFilter;
+  });
+
+  const totalPages = Math.ceil(filtered.length/perPage) || 1;
+  if(currentPage>totalPages) currentPage=totalPages;
+  const start = (currentPage-1)*perPage;
+  const paginated = filtered.slice(start, start+perPage);
+
+  document.getElementById("pageLabel").innerText = `Page ${currentPage} of ${totalPages}`;
+  tbody.innerHTML = "";
+
+  paginated.forEach((site) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${isEditMode? `<input type="text" class="edit-n" data-id="${site.id}" value="${site.name}">` : site.name}</td>
+      <td>${isEditMode? `<input type="text" class="edit-u" data-id="${site.id}" value="${site.url}">` : `<a href="${site.url}" target="_blank">${site.url}</a>`}</td>
+      <td>${isEditMode? `
+        <select class="edit-t" data-id="${site.id}">
+          <option value="LAN" ${site.networkType==='LAN'?'selected':''}>LAN</option>
+          <option value="Wi-Fi" ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
+        </select>` : site.networkType}</td>
+      <td class="status-${site.status}">${site.status?.toUpperCase() || 'CHECKING'}<br>${site.responseTime?site.responseTime+' ms':''}</td>
+      <td style="display:${isEditMode?'table-cell':'none'}">
+        <button onclick="deleteRow('${site.id}')" class="btn-red">Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
-// Add
-document.getElementById("addBtn").onclick=()=>{
-const name=newName.value;
-const url=newUrl.value;
-const network=newNetwork.value;
-if(!name||!url||!network) return alert("Fill all fields");
-websites.push({name,url,status:"checking",networkType:network});
-saveData();
-newName.value="";newUrl.value="";newNetwork.value="";
+// ====== BUTTON FUNCTIONS ======
+window.changePage = dir => { currentPage+=dir; if(currentPage<1) currentPage=1; render(); };
+window.resetPage = () => { currentPage=1; render(); };
+window.logout = () => { localStorage.removeItem("loggedIn"); window.location.href="index.html"; };
+
+window.addSite = () => {
+  const n=document.getElementById("newName").value;
+  const u=document.getElementById("newUrl").value;
+  const t=document.getElementById("newNetwork").value;
+  if(!n||!u) return alert("Missing data");
+  const newKey = Date.now();
+  set(ref(db, `websiteData/${newKey}`), { name:n, url:u, networkType:t, status:'checking' });
 };
 
-// Toggle
-editBtn.onclick=()=>toggleView(true);
-monBtn.onclick=()=>toggleView(false);
-
-function toggleView(edit){
-isEditMode=edit;
-adminTools.style.display=edit?"flex":"none";
-actionHeader.style.display=edit?"table-cell":"none";
-editBtn.classList.toggle("active",edit);
-monBtn.classList.toggle("active",!edit);
-renderTable();
-}
-
-// Delete
-window.deleteWebsite=(i)=>{
-if(confirm("Delete?")){
-websites.splice(i,1);
-saveData();
-}
+window.saveAll = () => {
+  document.querySelectorAll(".edit-n").forEach(el => set(ref(db, `websiteData/${el.dataset.id}/name`), el.value));
+  document.querySelectorAll(".edit-u").forEach(el => set(ref(db, `websiteData/${el.dataset.id}/url`), el.value));
+  document.querySelectorAll(".edit-t").forEach(el => set(ref(db, `websiteData/${el.dataset.id}/networkType`), el.value));
+  alert("Saved!");
+  toggleEdit(false);
 };
 
-// Render
-function renderTable(){
-const tbody=websiteTable;
-tbody.innerHTML="";
-const f=filter.value;
-const s=search.value.toLowerCase();
+window.deleteRow = id => { if(confirm("Delete?")) set(ref(db, `websiteData/${id}`), null); };
 
-websites.forEach((site,i)=>{
-if(f!=="all"&&site.status!==f)return;
-if(!site.name.toLowerCase().includes(s)&&!site.url.toLowerCase().includes(s))return;
-
-const row=document.createElement("tr");
-
-row.innerHTML=`
-<td>${isEditMode?`<input value="${site.name}">`:site.name}</td>
-<td>${isEditMode?`<input value="${site.url}">`:`<a href="${site.url}" target="_blank">${site.url}</a>`}</td>
-<td>${isEditMode?`
-<select>
-<option ${site.networkType==="LAN"?"selected":""}>LAN</option>
-<option ${site.networkType==="Wi-Fi"?"selected":""}>Wi-Fi</option>
-<option ${site.networkType==="COFE CF-4G007e"?"selected":""}>COFE CF-4G007e</option>
-</select>`:site.networkType}</td>
-<td class="${site.status}">${site.status.toUpperCase()}</td>
-<td style="display:${isEditMode?"table-cell":"none"}">
-<button onclick="deleteWebsite(${i})">Delete</button>
-</td>
-`;
-
-tbody.appendChild(row);
-checkStatus(site.url,i);
-});
-
-updateCounters();
-}
-
-// Status Check + Save to DB
-function checkStatus(url,i){
-fetch(url,{mode:"no-cors"})
-.then(()=>{
-if(websites[i].status!=="live"){
-websites[i].status="live";
-saveData();
-}
-})
-.catch(()=>{
-if(websites[i].status!=="down"){
-websites[i].status="down";
-saveData();
-}
-});
-}
-
-function updateCounters(){
-totalCount.innerText=websites.length;
-liveCount.innerText=websites.filter(s=>s.status==="live").length;
-downCount.innerText=websites.filter(s=>s.status==="down").length;
-}
-
-setInterval(()=>websites.forEach((s,i)=>checkStatus(s.url,i)),30000);
-
-logoutBtn.onclick=()=>{
-localStorage.removeItem("loggedIn");
-window.location.href="index.html";
+const toggleEdit = val => {
+  isEditMode=val;
+  document.getElementById("adminTools").style.display = val?'flex':'none';
+  document.getElementById("actionHeader").style.display= val?'table-cell':'none';
+  document.getElementById("viewTitle").innerText = val?"Management Mode":"Live Monitoring";
+  document.getElementById("editBtn").className = val?"active":"";
+  document.getElementById("monBtn").className = val?"":"active";
+  render();
 };
 
+document.getElementById("editBtn").onclick = () => toggleEdit(true);
+document.getElementById("monBtn").onclick = () => toggleEdit(false);
 </script>
+
 </body>
 </html>
