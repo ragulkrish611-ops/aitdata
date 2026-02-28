@@ -1,224 +1,263 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>TrataSoft Monitoring Dashboard</title>
+<title>TrataSoft Enterprise Monitoring</title>
+
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI', sans-serif; }
-  body { background:#f4f6f9; color:#333; }
-  #dashboard { display:flex; height:100vh; }
-  .sidebar { width:220px; background:#1d3557; color:white; padding:20px; flex-shrink:0; }
-  .sidebar h2 { text-align:center; margin-bottom:30px; }
-  .sidebar ul { list-style:none; }
-  .sidebar li { padding:12px; margin-bottom:10px; cursor:pointer; border-radius:5px; transition:0.2s; }
-  .sidebar li:hover, .sidebar li.active { background:#457b9d; }
-  .main { flex:1; display:flex; flex-direction:column; padding:20px; overflow:hidden; }
-  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-  .cards { display:flex; gap:15px; margin-bottom:20px; }
-  .card { flex:1; background:white; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); text-align:center; }
-  .controls { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
-  #adminTools { display:none; gap:10px; width:100%; margin-bottom:10px; }
-  .tableContainer { flex:1; overflow:auto; background:white; border-radius:8px; }
-  table { width:100%; border-collapse:collapse; }
-  th, td { text-align:left; padding:12px; border-bottom:1px solid #ddd; }
-  th { background:#f8f9fa; position: sticky; top:0; }
-  .status-live { color:#2a9d8f; font-weight:bold; }
-  .status-down { color:#e63946; font-weight:bold; }
-  .pagination { padding:15px; display:flex; justify-content:center; align-items:center; gap:20px; background:white; border-top:1px solid #ddd; }
-  input, select, button { padding:8px; border:1px solid #ccc; border-radius:4px; }
-  .btn-blue { background:#1d3557; color:white; border:none; cursor:pointer; }
-  .btn-red { background:#e63946; color:white; border:none; cursor:pointer; }
+    body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
+    #loginPage { height:100vh; display:flex; justify-content:center; align-items:center; background:linear-gradient(135deg,#1d3557,#457b9d); }
+    .login-box { background:white; padding:40px; border-radius:10px; width:320px; box-shadow:0 15px 40px rgba(0,0,0,0.3); text-align:center; }
+    .login-box input, .login-box select { width:100%; padding:10px; margin:10px 0; box-sizing: border-box; }
+    .login-box button { width:100%; padding:10px; background:#1d3557; color:white; border:none; cursor:pointer; }
+    .error { color:red; font-size: 14px; }
+
+    #dashboard { display:none; height:100vh; display:flex; }
+    .sidebar { width:220px; background:#1d3557; color:white; padding:20px; }
+    .sidebar h2 { margin-bottom:30px; }
+    .sidebar ul { list-style:none; padding:0; }
+    .sidebar li { padding:12px; margin-bottom:10px; border-radius:6px; background:#457b9d; cursor:pointer; transition: 0.3s; }
+    .sidebar li:hover { background: #a8dadc; color: #1d3557; }
+    .sidebar li.active { background: #e63946; }
+
+    .main { flex:1; padding:20px; overflow:auto; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .logout { background:#e63946; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius: 4px; }
+
+    .cards { display:flex; gap:20px; margin-bottom:20px; flex-wrap: wrap; }
+    .card { flex:1; min-width:120px; background:white; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+    .liveCard { border-left:5px solid #2a9d8f; }
+    .downCard { border-left:5px solid #e76f51; }
+    .card h3 { margin:0; font-size:15px; color:#777; }
+    .card p { font-size:28px; margin-top:10px; font-weight:bold; }
+
+    .controls { background:white; padding:15px; border-radius:10px; margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items: center; }
+    #adminTools { display: none; border-right: 2px solid #ddd; padding-right: 15px; }
+
+    .tableBox { background:white; padding:10px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#1d3557; color:white; padding:12px; text-align: left; }
+    td { padding:10px; border-bottom:1px solid #ddd; }
+    
+    .edit-input { width:90%; padding:5px; border:1px solid #ccc; border-radius:4px; }
+    .del-btn { background:#e63946; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; }
+
+    .live { color:#2a9d8f; font-weight:bold; }
+    .down { color:#e76f51; font-weight:bold; }
+    .checking { color:#f4a261; font-weight:bold; }
 </style>
 </head>
+
 <body>
 
-<div id="dashboard">
-  <div class="sidebar">
-    <h2>TrataSoft</h2>
-    <ul>
-      <li id="monBtn" class="active">Monitoring</li>
-      <li id="editBtn">Management</li>
-    </ul>
-  </div>
-
-  <div class="main">
-    <div class="topbar">
-      <h2 id="viewTitle">Live Monitoring</h2>
-      <button onclick="logout()" class="btn-red">Logout</button>
+<div id="loginPage">
+    <div class="login-box">
+        <h2>TrataSoft Admin</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p class="error" id="errorMsg"></p>
     </div>
-
-    <div class="cards">
-      <div class="card"><h3>Total</h3><p id="totalCount">0</p></div>
-      <div class="card" style="border-top:4px solid #2a9d8f"><h3>Live</h3><p id="liveCount">0</p></div>
-      <div class="card" style="border-top:4px solid #e63946"><h3>Down</h3><p id="downCount">0</p></div>
-    </div>
-
-    <div id="adminTools">
-      <input type="text" id="newName" placeholder="Name">
-      <input type="text" id="newUrl" placeholder="URL">
-      <select id="newNetwork">
-        <option value="LAN">LAN</option>
-        <option value="Wi-Fi">Wi-Fi</option>
-      </select>
-      <button onclick="addSite()" class="btn-blue">Add New</button>
-      <button onclick="saveAll()" class="btn-blue" style="background:#2a9d8f">Save All Changes</button>
-    </div>
-
-    <div class="controls">
-      <input type="text" id="search" placeholder="Search..." style="flex:1" oninput="resetPage()">
-      <select id="filter" onchange="resetPage()">
-        <option value="all">All</option>
-        <option value="live">Live</option>
-        <option value="down">Down</option>
-      </select>
-    </div>
-
-    <div class="tableContainer">
-      <table>
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>URL</th>
-            <th>Network</th>
-            <th>Status</th>
-            <th id="actionHeader" style="display:none">Action</th>
-          </tr>
-        </thead>
-        <tbody id="websiteTable"></tbody>
-      </table>
-    </div>
-
-    <div class="pagination">
-      <button onclick="changePage(-1)" id="prevBtn">Previous</button>
-      <span id="pageLabel">Page 1</span>
-      <button onclick="changePage(1)" id="nextBtn">Next</button>
-    </div>
-  </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<div id="dashboard">
+    <div class="sidebar">
+        <h2>TrataSoft</h2>
+        <ul>
+            <li id="monBtn" class="active" onclick="toggleView('monitor')">View Monitoring</li>
+            <li id="editBtn" onclick="toggleView('edit')">Settings / Edit</li>
+        </ul>
+    </div>
 
-const firebaseConfig = {
-  apiKey:"AIzaSyC1I7uggV3I8Z7pmbpWQmJZO_mHlWQ7qRc",
-  authDomain:"aitdata-1f856.firebaseapp.com",
-  databaseURL:"https://aitdata-1f856-default-rtdb.firebaseio.com",
-  projectId:"aitdata-1f856",
-  storageBucket:"aitdata-1f856.appspot.com",
-  messagingSenderId:"535350785851",
-  appId:"1:535350785851:web:67abe23a6da1dca7fe291e"
-};
+    <div class="main">
+        <div class="topbar">
+            <h2 id="viewTitle">Live Monitoring</h2>
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const dbRef = ref(db, "websiteData");
+        <div class="cards">
+            <div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
+            <div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
+            <div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
+        </div>
 
+        <div class="controls">
+            <div id="adminTools">
+                <input type="text" id="newName" placeholder="Company Name">
+                <input type="text" id="newUrl" placeholder="Website URL">
+                <select id="newNetwork">
+                    <option value="">Select Network Type</option>
+                    <option value="LAN">LAN</option>
+                    <option value="Wi-Fi">Wi-Fi</option>
+                    <option value="Mobile">Mobile</option>
+                </select>
+                <button style="background:#1d3557; color:white; border:none; padding:8px 15px; cursor:pointer;" onclick="addWebsite()">Add New</button>
+            </div>
+
+            <select id="filter" onchange="renderTable()">
+                <option value="all">Filter: All</option>
+                <option value="live">Live</option>
+                <option value="down">Down</option>
+            </select>
+            <input type="text" id="search" placeholder="Search site..." onkeyup="renderTable()">
+        </div>
+
+        <div class="tableBox">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Website</th>
+                        <th>Network</th>
+                        <th>Status</th>
+                        <th id="actionHeader" style="display:none;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="websiteTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
 let websites = [];
 let isEditMode = false;
-let currentPage = 1;
-const perPage = 50;
 
-// ====== REAL-TIME LISTENER & INSTANT COUNTS ======
-onValue(dbRef, (snapshot) => {
-  const data = snapshot.val();
-  websites = [];
-  let total = 0, live = 0, down = 0;
-
-  if (data) {
-    websites = Object.keys(data).map(key => {
-      const site = data[key];
-      site.id = key; // Attach Firebase key for edits
-      total++;
-      if(site.status==='live') live++;
-      else if(site.status==='down') down++;
-      return site;
+// Generate 001-700 sites with default Network Type
+for(let i = 1; i <= 700; i++){
+    let num = i.toString().padStart(3,'0');
+    websites.push({
+        name: "TrataSoft " + num,
+        url: "https://trtdlaita" + num + ".tratasoft.com/login",
+        status: "checking",
+        networkType: "LAN"
     });
-  }
-
-  // Update counts instantly
-  document.getElementById("totalCount").innerText = total;
-  document.getElementById("liveCount").innerText = live;
-  document.getElementById("downCount").innerText = down;
-
-  render();
-});
-
-// ====== RENDER FUNCTION ======
-function render() {
-  const tbody = document.getElementById("websiteTable");
-  const search = document.getElementById("search").value.toLowerCase();
-  const filter = document.getElementById("filter").value;
-
-  const filtered = websites.filter(s => {
-    const matchSearch = s.name.toLowerCase().includes(search) || s.url.toLowerCase().includes(search);
-    const matchFilter = filter==='all' || s.status===filter;
-    return matchSearch && matchFilter;
-  });
-
-  const totalPages = Math.ceil(filtered.length/perPage) || 1;
-  if(currentPage>totalPages) currentPage=totalPages;
-  const start = (currentPage-1)*perPage;
-  const paginated = filtered.slice(start, start+perPage);
-
-  document.getElementById("pageLabel").innerText = `Page ${currentPage} of ${totalPages}`;
-  tbody.innerHTML = "";
-
-  paginated.forEach((site) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${isEditMode? `<input type="text" class="edit-n" data-id="${site.id}" value="${site.name}">` : site.name}</td>
-      <td>${isEditMode? `<input type="text" class="edit-u" data-id="${site.id}" value="${site.url}">` : `<a href="${site.url}" target="_blank">${site.url}</a>`}</td>
-      <td>${isEditMode? `
-        <select class="edit-t" data-id="${site.id}">
-          <option value="LAN" ${site.networkType==='LAN'?'selected':''}>LAN</option>
-          <option value="Wi-Fi" ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
-        </select>` : site.networkType}</td>
-      <td class="status-${site.status}">${site.status?.toUpperCase() || 'CHECKING'}<br>${site.responseTime?site.responseTime+' ms':''}</td>
-      <td style="display:${isEditMode?'table-cell':'none'}">
-        <button onclick="deleteRow('${site.id}')" class="btn-red">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
 }
 
-// ====== BUTTON FUNCTIONS ======
-window.changePage = dir => { currentPage+=dir; if(currentPage<1) currentPage=1; render(); };
-window.resetPage = () => { currentPage=1; render(); };
-window.logout = () => { localStorage.removeItem("loggedIn"); window.location.href="index.html"; };
+function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    if(user === "admin" && pass === "123") {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("dashboard").style.display = "flex";
+        renderTable();
+    } else {
+        document.getElementById("errorMsg").innerText = "Invalid Login!";
+    }
+}
 
-window.addSite = () => {
-  const n=document.getElementById("newName").value;
-  const u=document.getElementById("newUrl").value;
-  const t=document.getElementById("newNetwork").value;
-  if(!n||!u) return alert("Missing data");
-  const newKey = Date.now();
-  set(ref(db, `websiteData/${newKey}`), { name:n, url:u, networkType:t, status:'checking' });
-};
+function logout() { location.reload(); }
 
-window.saveAll = () => {
-  document.querySelectorAll(".edit-n").forEach(el => set(ref(db, `websiteData/${el.dataset.id}/name`), el.value));
-  document.querySelectorAll(".edit-u").forEach(el => set(ref(db, `websiteData/${el.dataset.id}/url`), el.value));
-  document.querySelectorAll(".edit-t").forEach(el => set(ref(db, `websiteData/${el.dataset.id}/networkType`), el.value));
-  alert("Saved!");
-  toggleEdit(false);
-};
+function toggleView(mode) {
+    if (mode === 'edit') {
+        isEditMode = true;
+        document.getElementById('adminTools').style.display = "block";
+        document.getElementById('actionHeader').style.display = "table-cell";
+        document.getElementById('viewTitle').innerText = "Management Mode";
+        document.getElementById('editBtn').classList.add('active');
+        document.getElementById('monBtn').classList.remove('active');
+    } else {
+        isEditMode = false;
+        document.getElementById('adminTools').style.display = "none";
+        document.getElementById('actionHeader').style.display = "none";
+        document.getElementById('viewTitle').innerText = "Live Monitoring";
+        document.getElementById('monBtn').classList.add('active');
+        document.getElementById('editBtn').classList.remove('active');
+    }
+    renderTable();
+}
 
-window.deleteRow = id => { if(confirm("Delete?")) set(ref(db, `websiteData/${id}`), null); };
+function addWebsite() {
+    const name = document.getElementById("newName").value;
+    const url = document.getElementById("newUrl").value;
+    const network = document.getElementById("newNetwork").value;
+    if(!name || !url || !network) return alert("Fill all fields");
+    websites.push({ name, url, status: "checking", networkType: network });
+    document.getElementById("newName").value = "";
+    document.getElementById("newUrl").value = "";
+    document.getElementById("newNetwork").value = "";
+    renderTable();
+}
 
-const toggleEdit = val => {
-  isEditMode=val;
-  document.getElementById("adminTools").style.display = val?'flex':'none';
-  document.getElementById("actionHeader").style.display= val?'table-cell':'none';
-  document.getElementById("viewTitle").innerText = val?"Management Mode":"Live Monitoring";
-  document.getElementById("editBtn").className = val?"active":"";
-  document.getElementById("monBtn").className = val?"":"active";
-  render();
-};
+function deleteWebsite(index) {
+    if(confirm("Delete this entry?")) {
+        websites.splice(index, 1);
+        renderTable();
+    }
+}
 
-document.getElementById("editBtn").onclick = () => toggleEdit(true);
-document.getElementById("monBtn").onclick = () => toggleEdit(false);
+function renderTable() {
+    const filterValue = document.getElementById("filter").value;
+    const searchValue = document.getElementById("search").value.toLowerCase();
+    const tableBody = document.getElementById("websiteTable");
+    tableBody.innerHTML = "";
+
+    websites.forEach((site, index) => {
+        if(filterValue !== "all" && site.status !== filterValue) return;
+        if(!site.name.toLowerCase().includes(searchValue) && !site.url.toLowerCase().includes(searchValue)) return;
+
+        const row = document.createElement("tr");
+
+        const nameCell = isEditMode 
+            ? `<input class="edit-input" value="${site.name}" onchange="websites[${index}].name=this.value">` 
+            : site.name;
+
+        const urlCell = isEditMode 
+            ? `<input class="edit-input" value="${site.url}" onchange="websites[${index}].url=this.value">` 
+            : `<a href="${site.url}" target="_blank">${site.url}</a>`;
+
+        const networkCell = isEditMode 
+            ? `<select class="edit-input" onchange="websites[${index}].networkType=this.value">
+                <option value='LAN' ${site.networkType==='LAN'?'selected':''}>LAN</option>
+                <option value='Wi-Fi' ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
+                <option value='Mobile' ${site.networkType==='Mobile'?'selected':''}>Mobile</option>
+               </select>` 
+            : site.networkType;
+
+        const actionCell = isEditMode ? `<td><button class="del-btn" onclick="deleteWebsite(${index})">Delete</button></td>` : "";
+
+        row.innerHTML = `
+            <td>${nameCell}</td>
+            <td>${urlCell}</td>
+            <td>${networkCell}</td>
+            <td id="status-${index}" class="${site.status}">${site.status.toUpperCase()}</td>
+            ${actionCell}
+        `;
+
+        tableBody.appendChild(row);
+        checkStatus(site.url, index);
+    });
+
+    updateCounters();
+}
+
+function updateCounters() {
+    document.getElementById("totalCount").innerText = websites.length;
+    document.getElementById("liveCount").innerText = websites.filter(s => s.status === "live").length;
+    document.getElementById("downCount").innerText = websites.filter(s => s.status === "down").length;
+}
+
+function checkStatus(url, index) {
+    fetch(url, { mode: 'no-cors' })
+    .then(() => {
+        websites[index].status = "live";
+        const cell = document.getElementById("status-" + index);
+        if(cell) { cell.innerText = "LIVE"; cell.className = "live"; }
+    })
+    .catch(() => {
+        websites[index].status = "down";
+        const cell = document.getElementById("status-" + index);
+        if(cell) { cell.innerText = "DOWN"; cell.className = "down"; }
+    });
+}
+
+// Auto-refresh status every 30 seconds
+setInterval(() => {
+    if(document.getElementById("dashboard").style.display === "flex") {
+        websites.forEach((site, index) => checkStatus(site.url, index));
+        updateCounters();
+    }
+}, 30000);
 </script>
 
 </body>
