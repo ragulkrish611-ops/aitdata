@@ -3,262 +3,267 @@
 <head>
 <meta charset="UTF-8">
 <title>TrataSoft Enterprise Monitoring</title>
-
 <style>
-    body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
-    #loginPage { height:100vh; display:flex; justify-content:center; align-items:center; background:linear-gradient(135deg,#1d3557,#457b9d); }
-    .login-box { background:white; padding:40px; border-radius:10px; width:320px; box-shadow:0 15px 40px rgba(0,0,0,0.3); text-align:center; }
-    .login-box input, .login-box select { width:100%; padding:10px; margin:10px 0; box-sizing: border-box; }
-    .login-box button { width:100%; padding:10px; background:#1d3557; color:white; border:none; cursor:pointer; }
-    .error { color:red; font-size: 14px; }
+body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
+#loginPage { height:100vh; display:flex; justify-content:center; align-items:center; background:linear-gradient(135deg,#1d3557,#457b9d); }
+.login-box { background:white; padding:40px; border-radius:10px; width:320px; box-shadow:0 15px 40px rgba(0,0,0,0.3); text-align:center; }
+.login-box input, .login-box select { width:100%; padding:10px; margin:10px 0; box-sizing: border-box; }
+.login-box button { width:100%; padding:10px; background:#1d3557; color:white; border:none; cursor:pointer; }
+.error { color:red; font-size: 14px; }
 
-    #dashboard { display:none; height:100vh; display:flex; }
-    .sidebar { width:220px; background:#1d3557; color:white; padding:20px; }
-    .sidebar h2 { margin-bottom:30px; }
-    .sidebar ul { list-style:none; padding:0; }
-    .sidebar li { padding:12px; margin-bottom:10px; border-radius:6px; background:#457b9d; cursor:pointer; transition: 0.3s; }
-    .sidebar li:hover { background: #a8dadc; color: #1d3557; }
-    .sidebar li.active { background: #e63946; }
+#dashboard { display:none; height:100vh; display:flex; }
+.sidebar { width:220px; background:#1d3557; color:white; padding:20px; }
+.sidebar h2 { margin-bottom:30px; }
+.sidebar ul { list-style:none; padding:0; }
+.sidebar li { padding:12px; margin-bottom:10px; border-radius:6px; background:#457b9d; cursor:pointer; transition: 0.3s; }
+.sidebar li:hover { background: #a8dadc; color: #1d3557; }
+.sidebar li.active { background: #e63946; }
 
-    .main { flex:1; padding:20px; overflow:auto; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .logout { background:#e63946; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius: 4px; }
+.main { flex:1; padding:20px; overflow:auto; }
+.topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.logout { background:#e63946; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius: 4px; }
 
-    .cards { display:flex; gap:20px; margin-bottom:20px; flex-wrap: wrap; }
-    .card { flex:1; min-width:120px; background:white; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
-    .liveCard { border-left:5px solid #2a9d8f; }
-    .downCard { border-left:5px solid #e76f51; }
-    .card h3 { margin:0; font-size:15px; color:#777; }
-    .card p { font-size:28px; margin-top:10px; font-weight:bold; }
+.cards { display:flex; gap:20px; margin-bottom:20px; flex-wrap: wrap; }
+.card { flex:1; min-width:120px; background:white; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+.liveCard { border-left:5px solid #2a9d8f; }
+.downCard { border-left:5px solid #e76f51; }
+.card h3 { margin:0; font-size:15px; color:#777; }
+.card p { font-size:28px; margin-top:10px; font-weight:bold; }
 
-    .controls { background:white; padding:15px; border-radius:10px; margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items: center; }
-    #adminTools { display: none; border-right: 2px solid #ddd; padding-right: 15px; }
+.controls { background:white; padding:15px; border-radius:10px; margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items: center; }
+#adminTools { display: none; border-right: 2px solid #ddd; padding-right: 15px; }
 
-    .tableBox { background:white; padding:10px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:#1d3557; color:white; padding:12px; text-align: left; }
-    td { padding:10px; border-bottom:1px solid #ddd; }
-    
-    .edit-input { width:90%; padding:5px; border:1px solid #ccc; border-radius:4px; }
-    .del-btn { background:#e63946; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; }
+.tableBox { background:white; padding:10px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1); overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+th { background:#1d3557; color:white; padding:12px; text-align: left; }
+td { padding:10px; border-bottom:1px solid #ddd; }
 
-    .live { color:#2a9d8f; font-weight:bold; }
-    .down { color:#e76f51; font-weight:bold; }
-    .checking { color:#f4a261; font-weight:bold; }
+.edit-input { width:90%; padding:5px; border:1px solid #ccc; border-radius:4px; }
+.del-btn { background:#e63946; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px; }
+
+.live { color:#2a9d8f; font-weight:bold; }
+.down { color:#e76f51; font-weight:bold; }
+.checking { color:#f4a261; font-weight:bold; }
 </style>
 </head>
-
 <body>
 
 <div id="loginPage">
-    <div class="login-box">
-        <h2>TrataSoft Admin</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p class="error" id="errorMsg"></p>
-    </div>
+<div class="login-box">
+<h2>TrataSoft Admin</h2>
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p class="error" id="errorMsg"></p>
+</div>
 </div>
 
 <div id="dashboard">
-    <div class="sidebar">
-        <h2>TrataSoft</h2>
-        <ul>
-            <li id="monBtn" class="active" onclick="toggleView('monitor')">View Monitoring</li>
-            <li id="editBtn" onclick="toggleView('edit')">Settings / Edit</li>
-        </ul>
-    </div>
-
-    <div class="main">
-        <div class="topbar">
-            <h2 id="viewTitle">Live Monitoring</h2>
-            <button class="logout" onclick="logout()">Logout</button>
-        </div>
-
-        <div class="cards">
-            <div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
-            <div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
-            <div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
-        </div>
-
-        <div class="controls">
-            <div id="adminTools">
-                <input type="text" id="newName" placeholder="Company Name">
-                <input type="text" id="newUrl" placeholder="Website URL">
-                <select id="newNetwork">
-                    <option value="">Select Network Type</option>
-                    <option value="LAN">LAN</option>
-                    <option value="Wi-Fi">Wi-Fi</option>
-                    <option value="Mobile">Mobile</option>
-                </select>
-                <button style="background:#1d3557; color:white; border:none; padding:8px 15px; cursor:pointer;" onclick="addWebsite()">Add New</button>
-            </div>
-
-            <select id="filter" onchange="renderTable()">
-                <option value="all">Filter: All</option>
-                <option value="live">Live</option>
-                <option value="down">Down</option>
-            </select>
-            <input type="text" id="search" placeholder="Search site..." onkeyup="renderTable()">
-        </div>
-
-        <div class="tableBox">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Company</th>
-                        <th>Website</th>
-                        <th>Network</th>
-                        <th>Status</th>
-                        <th id="actionHeader" style="display:none;">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="websiteTable"></tbody>
-            </table>
-        </div>
-    </div>
+<div class="sidebar">
+<h2>TrataSoft</h2>
+<ul>
+<li id="monBtn" class="active" onclick="toggleView('monitor')">View Monitoring</li>
+<li id="editBtn" onclick="toggleView('edit')">Settings / Edit</li>
+</ul>
 </div>
 
-<script>
-let websites = [];
-let isEditMode = false;
+<div class="main">
+<div class="topbar">
+<h2 id="viewTitle">Live Monitoring</h2>
+<button class="logout" onclick="logout()">Logout</button>
+</div>
 
-// Generate 001-700 sites with default Network Type
-for(let i = 1; i <= 700; i++){
-    let num = i.toString().padStart(3,'0');
-    websites.push({
-        name: "TrataSoft " + num,
-        url: "https://trtdlaita" + num + ".tratasoft.com/login",
-        status: "checking",
-        networkType: "LAN"
+<div class="cards">
+<div class="card"><h3>Total Sites</h3><p id="totalCount">0</p></div>
+<div class="card liveCard"><h3>Live</h3><p id="liveCount">0</p></div>
+<div class="card downCard"><h3>Down</h3><p id="downCount">0</p></div>
+</div>
+
+<div class="controls">
+<div id="adminTools">
+<input type="text" id="newName" placeholder="Company Name">
+<input type="text" id="newUrl" placeholder="Website URL">
+<select id="newNetwork">
+<option value="">Select Network Type</option>
+<option value="LAN">LAN</option>
+<option value="Wi-Fi">Wi-Fi</option>
+<option value="Mobile">Mobile</option>
+</select>
+<button style="background:#1d3557; color:white; border:none; padding:8px 15px; cursor:pointer;" onclick="addWebsite()">Add New</button>
+<button style="background:#2a9d8f; color:white; border:none; padding:8px 15px; cursor:pointer;" onclick="saveAllChanges()">Save Changes</button>
+</div>
+
+<select id="filter" onchange="renderTable()">
+<option value="all">Filter: All</option>
+<option value="live">Live</option>
+<option value="down">Down</option>
+</select>
+<input type="text" id="search" placeholder="Search site..." onkeyup="renderTable()">
+</div>
+
+<div class="tableBox">
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Website</th>
+<th>Network</th>
+<th>Status</th>
+<th id="actionHeader" style="display:none;">Action</th>
+</tr>
+</thead>
+<tbody id="websiteTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
+authDomain: "aitdata.firebaseapp.com",
+databaseURL: "https://aitdata-1f856-default-rtdb.firebaseio.com",
+projectId: "aitdata",
+storageBucket: "aitdata.firebasestorage.app",
+messagingSenderId: "1086041126338",
+appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b",
+measurementId: "G-J2DDR8D9QN"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let websites=[];
+let isEditMode=false;
+
+// Load websites from Firebase
+function loadWebsites(){
+    db.ref('websiteData').on('value', snapshot=>{
+        websites=[];
+        snapshot.forEach(child=>{
+            websites.push({id:child.key,...child.val()});
+        });
+        renderTable();
     });
 }
 
-function login() {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-    if(user === "admin" && pass === "123") {
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("dashboard").style.display = "flex";
-        renderTable();
-    } else {
-        document.getElementById("errorMsg").innerText = "Invalid Login!";
+// Add new website
+function addWebsite(){
+    const name=document.getElementById("newName").value;
+    const url=document.getElementById("newUrl").value;
+    const network=document.getElementById("newNetwork").value;
+    if(!name||!url||!network) return alert("Fill all fields");
+    const newRef=db.ref('websiteData').push();
+    newRef.set({name,url,networkType:network,status:"checking"});
+    document.getElementById("newName").value="";
+    document.getElementById("newUrl").value="";
+    document.getElementById("newNetwork").value="";
+}
+
+// Save all changes button
+function saveAllChanges(){
+    websites.forEach(site=>{
+        db.ref('websiteData/'+site.id).update({
+            name: site.name,
+            url: site.url,
+            networkType: site.networkType
+        });
+    });
+    alert("All changes saved to Firebase!");
+}
+
+// Delete website
+function deleteWebsite(index){
+    if(confirm("Delete this entry?")){
+        db.ref('websiteData/'+websites[index].id).remove();
     }
 }
 
-function logout() { location.reload(); }
+// Check website status
+function checkStatus(url,index){
+    fetch(url,{mode:'no-cors'}).then(()=>{
+        db.ref('websiteData/'+websites[index].id+'/status').set("live");
+    }).catch(()=>{
+        db.ref('websiteData/'+websites[index].id+'/status').set("down");
+    });
+}
 
-function toggleView(mode) {
-    if (mode === 'edit') {
-        isEditMode = true;
-        document.getElementById('adminTools').style.display = "block";
-        document.getElementById('actionHeader').style.display = "table-cell";
-        document.getElementById('viewTitle').innerText = "Management Mode";
+// Render table
+function renderTable(){
+    const filter=document.getElementById("filter").value;
+    const search=document.getElementById("search").value.toLowerCase();
+    const tbody=document.getElementById("websiteTable");
+    tbody.innerHTML="";
+
+    websites.forEach((site,index)=>{
+        if(filter!=="all" && site.status!==filter) return;
+        if(!site.name.toLowerCase().includes(search) && !site.url.toLowerCase().includes(search)) return;
+
+        const row=document.createElement("tr");
+
+        const nameCell=isEditMode? `<input class="edit-input" value="${site.name}" onchange="db.ref('websiteData/${site.id}/name').set(this.value); site.name=this.value;">`:site.name;
+        const urlCell=isEditMode? `<input class="edit-input" value="${site.url}" onchange="db.ref('websiteData/${site.id}/url').set(this.value); site.url=this.value;">`:`<a href="${site.url}" target="_blank">${site.url}</a>`;
+        const networkCell=isEditMode? `<select class="edit-input" onchange="db.ref('websiteData/${site.id}/networkType').set(this.value); site.networkType=this.value;">
+            <option value='LAN' ${site.networkType==='LAN'?'selected':''}>LAN</option>
+            <option value='Wi-Fi' ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
+            <option value='Mobile' ${site.networkType==='Mobile'?'selected':''}>Mobile</option>
+        </select>`:site.networkType;
+
+        const actionCell=isEditMode? `<td><button class="del-btn" onclick="deleteWebsite(${index})">Delete</button></td>`:"";
+
+        row.innerHTML=`<td>${nameCell}</td><td>${urlCell}</td><td>${networkCell}</td><td class="${site.status}">${site.status.toUpperCase()}</td>${actionCell}`;
+        tbody.appendChild(row);
+
+        // Check status
+        checkStatus(site.url,index);
+    });
+
+    document.getElementById("totalCount").innerText=websites.length;
+    document.getElementById("liveCount").innerText=websites.filter(s=>s.status==="live").length;
+    document.getElementById("downCount").innerText=websites.filter(s=>s.status==="down").length;
+}
+
+// Login
+function login(){
+    const user=document.getElementById("username").value;
+    const pass=document.getElementById("password").value;
+    if(user==="admin" && pass==="123"){
+        document.getElementById("loginPage").style.display="none";
+        document.getElementById("dashboard").style.display="flex";
+        loadWebsites();
+    } else document.getElementById("errorMsg").innerText="Invalid Login!";
+}
+
+function logout(){ location.reload(); }
+
+function toggleView(mode){
+    if(mode==='edit'){
+        isEditMode=true;
+        document.getElementById('adminTools').style.display="block";
+        document.getElementById('actionHeader').style.display="table-cell";
+        document.getElementById('viewTitle').innerText="Management Mode";
         document.getElementById('editBtn').classList.add('active');
         document.getElementById('monBtn').classList.remove('active');
-    } else {
-        isEditMode = false;
-        document.getElementById('adminTools').style.display = "none";
-        document.getElementById('actionHeader').style.display = "none";
-        document.getElementById('viewTitle').innerText = "Live Monitoring";
+    } else{
+        isEditMode=false;
+        document.getElementById('adminTools').style.display="none";
+        document.getElementById('actionHeader').style.display="none";
+        document.getElementById('viewTitle').innerText="Live Monitoring";
         document.getElementById('monBtn').classList.add('active');
         document.getElementById('editBtn').classList.remove('active');
     }
     renderTable();
 }
 
-function addWebsite() {
-    const name = document.getElementById("newName").value;
-    const url = document.getElementById("newUrl").value;
-    const network = document.getElementById("newNetwork").value;
-    if(!name || !url || !network) return alert("Fill all fields");
-    websites.push({ name, url, status: "checking", networkType: network });
-    document.getElementById("newName").value = "";
-    document.getElementById("newUrl").value = "";
-    document.getElementById("newNetwork").value = "";
-    renderTable();
-}
-
-function deleteWebsite(index) {
-    if(confirm("Delete this entry?")) {
-        websites.splice(index, 1);
+// Auto-refresh
+setInterval(()=>{
+    if(document.getElementById("dashboard").style.display==="flex"){
+        websites.forEach((site,index)=>checkStatus(site.url,index));
         renderTable();
     }
-}
-
-function renderTable() {
-    const filterValue = document.getElementById("filter").value;
-    const searchValue = document.getElementById("search").value.toLowerCase();
-    const tableBody = document.getElementById("websiteTable");
-    tableBody.innerHTML = "";
-
-    websites.forEach((site, index) => {
-        if(filterValue !== "all" && site.status !== filterValue) return;
-        if(!site.name.toLowerCase().includes(searchValue) && !site.url.toLowerCase().includes(searchValue)) return;
-
-        const row = document.createElement("tr");
-
-        const nameCell = isEditMode 
-            ? `<input class="edit-input" value="${site.name}" onchange="websites[${index}].name=this.value">` 
-            : site.name;
-
-        const urlCell = isEditMode 
-            ? `<input class="edit-input" value="${site.url}" onchange="websites[${index}].url=this.value">` 
-            : `<a href="${site.url}" target="_blank">${site.url}</a>`;
-
-        const networkCell = isEditMode 
-            ? `<select class="edit-input" onchange="websites[${index}].networkType=this.value">
-                <option value='LAN' ${site.networkType==='LAN'?'selected':''}>LAN</option>
-                <option value='Wi-Fi' ${site.networkType==='Wi-Fi'?'selected':''}>Wi-Fi</option>
-                <option value='Mobile' ${site.networkType==='Mobile'?'selected':''}>Mobile</option>
-               </select>` 
-            : site.networkType;
-
-        const actionCell = isEditMode ? `<td><button class="del-btn" onclick="deleteWebsite(${index})">Delete</button></td>` : "";
-
-        row.innerHTML = `
-            <td>${nameCell}</td>
-            <td>${urlCell}</td>
-            <td>${networkCell}</td>
-            <td id="status-${index}" class="${site.status}">${site.status.toUpperCase()}</td>
-            ${actionCell}
-        `;
-
-        tableBody.appendChild(row);
-        checkStatus(site.url, index);
-    });
-
-    updateCounters();
-}
-
-function updateCounters() {
-    document.getElementById("totalCount").innerText = websites.length;
-    document.getElementById("liveCount").innerText = websites.filter(s => s.status === "live").length;
-    document.getElementById("downCount").innerText = websites.filter(s => s.status === "down").length;
-}
-
-function checkStatus(url, index) {
-    fetch(url, { mode: 'no-cors' })
-    .then(() => {
-        websites[index].status = "live";
-        const cell = document.getElementById("status-" + index);
-        if(cell) { cell.innerText = "LIVE"; cell.className = "live"; }
-    })
-    .catch(() => {
-        websites[index].status = "down";
-        const cell = document.getElementById("status-" + index);
-        if(cell) { cell.innerText = "DOWN"; cell.className = "down"; }
-    });
-}
-
-// Auto-refresh status every 30 seconds
-setInterval(() => {
-    if(document.getElementById("dashboard").style.display === "flex") {
-        websites.forEach((site, index) => checkStatus(site.url, index));
-        updateCounters();
-    }
-}, 30000);
+},30000);
 </script>
-
 </body>
 </html>
