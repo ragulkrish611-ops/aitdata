@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TrataSoft Login & Registration</title>
+<style>
+body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
+.box { width:350px; padding:40px; background:white; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.2); margin: 50px auto; text-align:center; }
+.box h2 { margin-bottom:20px; }
+.box input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
+.box button { width:100%; padding:10px; background:#1d3557; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px; }
+.switch { color:#1d3557; cursor:pointer; margin-top:15px; display:block; }
+.error { color:red; font-size:14px; margin-top:10px; }
+.success { color:green; font-size:14px; margin-top:10px; }
+</style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div class="box" id="loginBox">
+    <h2>Login</h2>
+    <input type="text" id="loginUsername" placeholder="Username">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <span class="switch" onclick="toggleForm()">Don't have an account? Register</span>
+    <p class="error" id="loginError"></p>
+</div>
+
+<div class="box" id="registerBox" style="display:none;">
+    <h2>Register</h2>
+    <input type="text" id="regUsername" placeholder="Username">
+    <input type="password" id="regPassword" placeholder="Password">
+    <input type="email" id="regEmail" placeholder="Email">
+    <button onclick="register()">Register</button>
+    <span class="switch" onclick="toggleForm()">Already have an account? Login</span>
+    <p class="error" id="regError"></p>
+    <p class="success" id="regSuccess"></p>
+</div>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
+  authDomain: "aitdata.firebaseapp.com",
+  databaseURL: "https://aitdata-1f856-default-rtdb.firebaseio.com/",
+  projectId: "aitdata",
+  storageBucket: "aitdata.firebasestorage.app",
+  messagingSenderId: "1086041126338",
+  appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b",
+  measurementId: "G-J2DDR8D9QN"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Toggle between login & registration
+function toggleForm(){
+    const loginBox = document.getElementById("loginBox");
+    const regBox = document.getElementById("registerBox");
+    loginBox.style.display = loginBox.style.display === "none" ? "block" : "none";
+    regBox.style.display = regBox.style.display === "none" ? "block" : "none";
+}
+
+// Login function
+function login(){
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    document.getElementById("loginError").innerText = "";
+
+    if(!username || !password){ document.getElementById("loginError").innerText="Fill all fields!"; return; }
+
+    db.ref("users").orderByChild("username").equalTo(username).get().then(snapshot=>{
+        if(snapshot.exists()){
+            const userData = Object.values(snapshot.val())[0];
+            if(userData.password === password){
+                sessionStorage.setItem("loggedInUser", username);
+                window.location.href = "dashboard.html";
+            } else {
+                document.getElementById("loginError").innerText="Incorrect password!";
+            }
+        } else {
+            document.getElementById("loginError").innerText="User not found!";
+        }
+    });
+}
+
+// Registration function
+function register(){
+    const username = document.getElementById("regUsername").value.trim();
+    const password = document.getElementById("regPassword").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    document.getElementById("regError").innerText = "";
+    document.getElementById("regSuccess").innerText = "";
+
+    if(!username || !password || !email){ document.getElementById("regError").innerText="Fill all fields!"; return; }
+
+    // Check if username exists
+    db.ref("users").orderByChild("username").equalTo(username).get().then(snapshot=>{
+        if(snapshot.exists()){
+            document.getElementById("regError").innerText="Username already exists!";
+        } else {
+            const newUserRef = db.ref("users").push();
+            newUserRef.set({ username, password, email }).then(()=>{
+                document.getElementById("regSuccess").innerText="Registration successful! You can now login.";
+                document.getElementById("regUsername").value="";
+                document.getElementById("regPassword").value="";
+                document.getElementById("regEmail").value="";
+            });
+        }
+    });
+}
+</script>
+</body>
+</html>
 
