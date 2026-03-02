@@ -13,10 +13,12 @@ body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
 .error { color:red; font-size:14px; margin-top:10px; }
 .success { color:green; font-size:14px; margin-top:10px; }
 </style>
+
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
 </head>
 <body>
 
@@ -47,21 +49,22 @@ body { margin:0; font-family:'Segoe UI', sans-serif; background:#f4f6f9; }
 </div>
 
 <script>
-// ----------------- Firebase Config -----------------
+// ---------------- Firebase Config ----------------
 const firebaseConfig = {
-  apiKey: "AIzaSyDKtHixAqtV7mt3rLG6O40cD5sag_PPT-4",
-  authDomain: "aitdata.firebaseapp.com",
-  databaseURL: "https://aitdata-1f856-default-rtdb.firebaseio.com/",
-  projectId: "aitdata",
-  storageBucket: "aitdata.firebasestorage.app",
-  messagingSenderId: "1086041126338",
-  appId: "1:1086041126338:web:71fdfaa5ff41218ec1525b"
+  apiKey: "AIzaSyC1I7uggV3I8Z7pmbpWQmJZO_mHlWQ7qRc",
+  authDomain: "aitdata-1f856.firebaseapp.com",
+  databaseURL: "https://aitdata-1f856-default-rtdb.firebaseio.com",
+  projectId: "aitdata-1f856",
+  storageBucket: "aitdata-1f856.firebasestorage.app",
+  messagingSenderId: "535350785851",
+  appId: "1:535350785851:web:67abe23a6da1dca7fe291e",
+  measurementId: "G-82Y1DL677C"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-// ----------------- Toggle Forms -----------------
+// ---------------- Toggle Forms ----------------
 function toggleForm(){
     const loginBox = document.getElementById("loginBox");
     const regBox = document.getElementById("registerBox");
@@ -69,7 +72,7 @@ function toggleForm(){
     regBox.style.display = regBox.style.display === "none" ? "block" : "none";
 }
 
-// ----------------- Login -----------------
+// ---------------- Login ----------------
 function login(){
     const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
@@ -95,8 +98,16 @@ function login(){
     });
 }
 
-// ----------------- Registration with OTP -----------------
+// ---------------- Registration with Phone OTP ----------------
 let confirmationResult = null;
+
+// Initialize reCAPTCHA once globally
+window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+    'size': 'invisible',
+    'callback': () => { console.log("reCAPTCHA verified"); },
+    'expired-callback': () => { console.log("reCAPTCHA expired"); }
+});
+recaptchaVerifier.render();
 
 function sendOTP(){
     const phone = document.getElementById("regPhone").value.trim();
@@ -111,18 +122,13 @@ function sendOTP(){
         return;
     }
 
-    // Check username exists
+    // Check if username exists
     db.ref("users").orderByChild("username").equalTo(username).get().then(snapshot=>{
         if(snapshot.exists()){
             document.getElementById("regError").innerText="Username already exists!";
             return;
         } else {
-            // Initialize reCAPTCHA
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                'size': 'invisible',
-                'callback': () => { sendOTP(); }
-            });
-
+            // Use the global reCAPTCHA
             auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
             .then((result) => {
                 confirmationResult = result;
@@ -143,7 +149,7 @@ function verifyOTP(){
     confirmationResult.confirm(otp).then((result) => {
         const user = result.user;
 
-        // Save user in DB
+        // Save user in Firebase Realtime Database
         const username = document.getElementById("regUsername").value.trim();
         const password = document.getElementById("regPassword").value.trim();
         const email = document.getElementById("regEmail").value.trim();
@@ -164,6 +170,5 @@ function verifyOTP(){
     });
 }
 </script>
-
 </body>
 </html>
