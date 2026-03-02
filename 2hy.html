@@ -124,6 +124,7 @@ const db = firebase.database();
 let websites = [];
 let isEditMode = false;
 
+// Toggle view
 function toggleView(mode){
     if(mode==='edit'){
         isEditMode=true;
@@ -132,7 +133,7 @@ function toggleView(mode){
         document.getElementById('viewTitle').innerText="Management Mode";
         document.getElementById('editBtn').classList.add('active');
         document.getElementById('monBtn').classList.remove('active');
-    } else {
+    } else{
         isEditMode=false;
         document.getElementById('adminTools').style.display="none";
         document.getElementById('actionHeader').style.display="none";
@@ -143,6 +144,7 @@ function toggleView(mode){
     renderTable();
 }
 
+// Fetch database
 async function fetchDatabase(){
     const snapshot = await db.ref("websiteData").get();
     websites = snapshot.exists() ? (Array.isArray(snapshot.val()) ? snapshot.val() : Object.values(snapshot.val())) : [];
@@ -150,6 +152,7 @@ async function fetchDatabase(){
     updateLastUpdated();
 }
 
+// Save changes
 async function saveChanges(){
     const tableBody = document.getElementById("websiteTable");
     const rows = tableBody.getElementsByTagName("tr");
@@ -161,11 +164,11 @@ async function saveChanges(){
         if(selects[0]) websites[i].networkType=selects[0].value;
     }
     await db.ref("websiteData").set(websites);
-    alert("Changes saved!");
     renderTable();
     updateLastUpdated();
 }
 
+// Add website
 async function addWebsite(){
     const name=document.getElementById("newName").value;
     const url=document.getElementById("newUrl").value;
@@ -180,6 +183,7 @@ async function addWebsite(){
     updateLastUpdated();
 }
 
+// Delete single
 async function deleteWebsite(index){
     if(confirm("Delete this entry?")){
         websites.splice(index,1);
@@ -189,6 +193,7 @@ async function deleteWebsite(index){
     }
 }
 
+// Delete selected
 async function deleteSelected(){
     const checkboxes = document.querySelectorAll(".rowCheckbox:checked");
     if(checkboxes.length===0) return alert("Select at least one row!");
@@ -200,61 +205,63 @@ async function deleteSelected(){
     updateLastUpdated();
 }
 
+// Toggle select all
 function toggleSelectAll(box){
     document.querySelectorAll(".rowCheckbox").forEach(cb=>cb.checked=box.checked);
 }
 
+// Render table
 function renderTable(){
-    const filterValue = document.getElementById("filter").value;
-    const searchValue = document.getElementById("search").value.toLowerCase();
-    const tableBody = document.getElementById("websiteTable");
-    tableBody.innerHTML = "";
+    const filterValue=document.getElementById("filter").value;
+    const searchValue=document.getElementById("search").value.toLowerCase();
+    const tableBody=document.getElementById("websiteTable");
+    tableBody.innerHTML="";
 
-    websites.forEach((site,index)=>{
+    websites.forEach(function(site,index){
         if(filterValue!=="all" && site.status!==filterValue) return;
         if(!site.name.toLowerCase().includes(searchValue) && !site.url.toLowerCase().includes(searchValue)) return;
 
-        const row = document.createElement("tr");
-        const checkboxCell = "<td><input type='checkbox' class='rowCheckbox' data-index='"+index+"'></td>";
-        const nameCell = isEditMode ? "<input class='edit-input' value='"+site.name+"' onchange='websites["+index+"].name=this.value'>" : site.name;
-        const urlCell = isEditMode ? "<input class='edit-input' value='"+site.url+"' onchange='websites["+index+"].url=this.value'>" : "<a href='"+site.url+"' target='_blank'>"+site.url+"</a>";
-        const networkCell = isEditMode ? "<select class='edit-input' onchange='websites["+index+"].networkType=this.value'>"
-            + "<option value='LAN'"+(site.networkType==='LAN'?' selected':'')+">LAN</option>"
-            + "<option value='Wi-Fi'"+(site.networkType==='Wi-Fi'?' selected':'')+">Wi-Fi</option>"
-            + "<option value='Mobile'"+(site.networkType==='Mobile'?' selected':'')+">Mobile</option>"
-            + "</select>"
-            : site.networkType;
-        const actionCell = isEditMode ? "<td><button class='del-btn' onclick='deleteWebsite("+index+")'>Delete</button></td>" : "";
+        const row=document.createElement("tr");
 
-        row.innerHTML = checkboxCell + "<td>"+nameCell+"</td><td>"+urlCell+"</td><td>"+networkCell+"</td><td id='status-"+index+"' class='"+site.status+"'>"+site.status.toUpperCase()+"</td>" + actionCell;
+        const checkboxCell = "<td><input type='checkbox' class='rowCheckbox' data-index='" + index + "'></td>";
+        const nameCell = isEditMode ? "<input class='edit-input' value='" + site.name + "' onchange='websites[" + index + "].name=this.value'>" : site.name;
+        const urlCell = isEditMode ? "<input class='edit-input' value='" + site.url + "' onchange='websites[" + index + "].url=this.value'>" : "<a href='" + site.url + "' target='_blank'>" + site.url + "</a>";
+        const networkCell = isEditMode
+            ? "<select class='edit-input' onchange='websites[" + index + "].networkType=this.value'>\
+                <option value='LAN'" + (site.networkType==='LAN'?' selected':'') + ">LAN</option>\
+                <option value='Wi-Fi'" + (site.networkType==='Wi-Fi'?' selected':'') + ">Wi-Fi</option>\
+                <option value='Mobile'" + (site.networkType==='Mobile'?' selected':'') + ">Mobile</option>\
+              </select>"
+            : site.networkType;
+        const actionCell = isEditMode ? "<td><button class='del-btn' onclick='deleteWebsite(" + index + ")'>Delete</button></td>" : "";
+
+        row.innerHTML = checkboxCell + "<td>" + nameCell + "</td><td>" + urlCell + "</td><td>" + networkCell + "</td><td id='status-" + index + "' class='" + site.status + "'>" + site.status.toUpperCase() + "</td>" + actionCell;
         tableBody.appendChild(row);
     });
 
     updateCounters();
 }
 
+// Update counters
 function updateCounters(){
-    document.getElementById("totalCount").innerText = websites.length;
-    document.getElementById("liveCount").innerText = websites.filter(s=>s.status==="live").length;
-    document.getElementById("downCount").innerText = websites.filter(s=>s.status==="down").length;
+    document.getElementById("totalCount").innerText=websites.length;
+    document.getElementById("liveCount").innerText=websites.filter(s=>s.status==="live").length;
+    document.getElementById("downCount").innerText=websites.filter(s=>s.status==="down").length;
 }
 
+// Update "Last Updated" timestamp
 function updateLastUpdated(){
     const now = new Date();
-    document.getElementById("lastUpdated").innerText = "Last Updated: "+now.toLocaleString();
+    document.getElementById("lastUpdated").innerText = "Last Updated: " + now.toLocaleString();
 }
 
+// Fetch initial data
 fetchDatabase();
 
-// Auto-update last updated every 5 minutes
-setInterval(updateLastUpdated, 300000);
-
-// Login check
-//if(!sessionStorage.getItem("loggedInUser")){
-    //alert("Please login first!");
-   // window.location.href="index.html";
-}
+// Auto-refresh every 5 minutes
+setInterval(()=>{
+    updateLastUpdated();
+},300000);
 </script>
 </body>
-
 </html>
